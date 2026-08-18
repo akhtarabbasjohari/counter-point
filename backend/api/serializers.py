@@ -23,6 +23,13 @@ class DocumentUploadSerializer(serializers.Serializer):
                 f"File size exceeds maximum allowed limit of 10MB (file size: {file_size / (1024*1024):.2f}MB)."
             )
 
+        # Basic magic byte check for PDF files
+        if ext == '.pdf':
+            header = value.read(4)
+            value.seek(0)
+            if header and not header.startswith(b'%PDF'):
+                raise serializers.ValidationError("Corrupted or invalid PDF header. File is not a valid PDF document.")
+
         return value
 
 class SearchRequestSerializer(serializers.Serializer):
