@@ -29,10 +29,10 @@ This roadmap breaks down the implementation of CounterPoint into 5 small, increm
 - [x] Verify multi-hop research accuracy with test queries.
 
 ## Phase 5: UI Dashboard & End-to-End Verification
-- [ ] Build clean, responsive single-page web UI (Vite + Vanilla CSS/HTML):
+- [x] Build clean, responsive single-page web UI (Vite + Vanilla CSS/HTML):
   - Competitor search input & document upload dropzone
   - Findings summary display panel (offerings, pricing, gap analysis)
   - Real-time timestamped audit log viewer
   - Interactive multi-turn chat / Q&A section
-- [ ] Connect frontend to Django REST Framework API endpoints.
-- [ ] Perform full end-to-end user workflow testing and polish visual design.
+- [x] Connect frontend to Django REST Framework API endpoints.
+- [x] Perform full end-to-end user workflow testing and polish visual design.

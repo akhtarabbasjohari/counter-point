@@ -5,28 +5,28 @@ This plan breaks down the implementation and polish of the UI Dashboard and End-
 ---
 
 ### Task Group 1: Core Design System & CSS Layout Refinement (`frontend/src/index.css`)
-- [ ] Refine CSS design tokens (`--bg-primary`, `--accent-color`, `--status-success`, `--card-bg`, etc.).
-- [ ] Polish responsive media query breakpoints (`@media (max-width: 1024px)`, `@media (max-width: 640px)`).
-- [ ] Enhance sidebar drawer transitions, dropzone hover states, report card typography, and modal overlays.
+- [x] Refine CSS design tokens (`--bg-primary`, `--accent-color`, `--status-success`, `--card-bg`, etc.).
+- [x] Polish responsive media query breakpoints (`@media (max-width: 1024px)`, `@media (max-width: 640px)`).
+- [x] Enhance sidebar drawer transitions, dropzone hover states, report card typography, and modal overlays.
 
 ---
 
 ### Task Group 2: Single-Page HTML Structure & DOM Components (`frontend/index.html`)
-- [ ] Audit `index.html` structure for semantic HTML5 markup, accessibility labels, and unique IDs.
-- [ ] Ensure dropzone, active document viewer, preset query chips, research timeline container, and audit log list elements are cleanly structured.
-- [ ] Polish modal markup for JSON audit log inspection.
+- [x] Audit `index.html` structure for semantic HTML5 markup, accessibility labels, and unique IDs.
+- [x] Ensure dropzone, active document viewer, preset query chips, research timeline container, and audit log list elements are cleanly structured.
+- [x] Polish modal markup for JSON audit log inspection.
 
 ---
 
 ### Task Group 3: Event-Driven Client State & Controller (`frontend/src/main.js`, `frontend/src/api.js`)
-- [ ] Connect `ApiClient` endpoints to UI event handlers (`fileInput`, `dropzone`, `queryForm`, `btnResetSession`, `btnClearDoc`).
-- [ ] Implement automatic event-driven log refreshes following file uploads, search requests, and synthesis executions.
-- [ ] Add interactive log inspector modal displaying formatted JSON payload and execution duration.
-- [ ] Handle backend health status indicator and error boundary notifications.
+- [x] Connect `ApiClient` endpoints to UI event handlers (`fileInput`, `dropzone`, `queryForm`, `btnResetSession`, `btnClearDoc`).
+- [x] Implement automatic event-driven log refreshes following file uploads, search requests, and synthesis executions.
+- [x] Add interactive log inspector modal displaying formatted JSON payload and execution duration.
+- [x] Handle backend health status indicator and error boundary notifications.
 
 ---
 
 ### Task Group 4: Automated Testing & End-to-End Verification (`frontend/src/api.test.js`, Vitest, Django tests)
-- [ ] Execute Vitest unit test suite `npx vitest run` for frontend API client interactions.
-- [ ] Execute full Django backend test suite `python manage.py test api`.
-- [ ] Verify full end-to-end user workflow (document upload -> competitor query -> multi-hop synthesis report -> audit log inspection -> session reset).
+- [x] Execute Vitest unit test suite `npx vitest run` for frontend API client interactions.
+- [x] Execute full Django backend test suite `python manage.py test api`.
+- [x] Verify full end-to-end user workflow (document upload -> competitor query -> multi-hop synthesis report -> audit log inspection -> session reset).
