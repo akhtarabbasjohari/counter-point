@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CounterPoint - Real-Time Competitive Intelligence</title>
+  <meta name="description" content="Automated real-time competitor research and internal positioning gap analysis powered by multi-hop LLM reasoning." />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/src/index.css" />
+</head>
+<body>
+  <div id="app" class="app-container">
+    <!-- Header Navbar -->
+    <header class="app-header">
+      <div class="header-brand">
+        <div class="logo-mark">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="16 18 22 12 16 6"></polyline>
+            <polyline points="8 6 2 12 8 18"></polyline>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <h1>CounterPoint</h1>
+          <span class="badge">Intelligence Engine</span>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <div class="status-indicator" id="status-indicator">
+          <span class="status-dot"></span>
+          <span class="status-text" id="status-text">Backend Connected</span>
+        </div>
+        <button id="btn-reset-session" class="btn btn-secondary btn-sm" title="Clear document context and audit history">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+          Reset Session
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Workspace Layout -->
+    <main class="main-layout">
+      <!-- Left Sidebar Column: Document Upload & Research Target -->
+      <aside class="sidebar-panel">
+        <!-- Document Upload Card -->
+        <section class="card doc-card">
+          <div class="card-header">
+            <h2 class="card-title">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+              Internal Positioning File
+            </h2>
+            <span class="doc-badge" id="doc-status-badge">No File Uploaded</span>
+          </div>
+          
+          <div class="card-body">
+            <div id="dropzone" class="dropzone">
+              <input type="file" id="file-input" accept=".pdf,.txt,.md" hidden />
+              <div class="dropzone-content">
+                <div class="upload-icon">
+                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                </div>
+                <p class="dropzone-text"><strong>Click to upload</strong> or drag & drop</p>
+                <p class="dropzone-subtext">Supports PDF (.pdf) and Text (.txt, .md) files</p>
+              </div>
+            </div>
+
+            <!-- Active Document Metadata View -->
+            <div id="doc-active-view" class="doc-active-view hidden">
+              <div class="doc-meta-header">
+                <div class="doc-file-info">
+                  <span class="file-icon" id="doc-icon">TXT</span>
+                  <div>
+                    <h3 id="doc-file-name" class="doc-name">strategy_file.pdf</h3>
+                    <p id="doc-file-stats" class="doc-stats">1,240 words • 8.4 KB</p>
+                  </div>
+                </div>
+                <button id="btn-clear-doc" class="btn-icon" title="Remove document">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+              </div>
+              <div class="doc-preview-box">
+                <p class="doc-preview-label">Document Excerpt:</p>
+                <div id="doc-preview-text" class="doc-preview-content"></div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Competitor Quick Select Card -->
+        <section class="card quick-search-card">
+          <div class="card-header">
+            <h2 class="card-title">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              Quick Competitor Lookup
+            </h2>
+          </div>
+          <div class="card-body">
+            <p class="quick-help-text">Select a popular competitor or enter a custom query below to launch multi-hop research:</p>
+            <div class="chip-group" id="preset-chips">
+              <button class="chip" data-query="Notion pricing features market positioning">Notion</button>
+              <button class="chip" data-query="Linear product offerings positioning gap">Linear</button>
+              <button class="chip" data-query="HubSpot sales CRM offerings pricing">HubSpot</button>
+              <button class="chip" data-query="ClickUp pricing models customer target">ClickUp</button>
+              <button class="chip" data-query="Salesforce enterprise positioning update">Salesforce</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- Real-Time Audit Log Panel -->
+        <section class="card audit-card">
+          <div class="card-header">
+            <h2 class="card-title">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+              Timestamped Audit Log
+            </h2>
+            <span id="log-count-badge" class="log-count">0 calls</span>
+          </div>
+          <div class="card-body p-0">
+            <div id="audit-log-list" class="audit-log-list">
+              <div class="empty-logs">No tool executions recorded yet.</div>
+            </div>
+          </div>
+        </section>
+      </aside>
+
+      <!-- Right Main Column: Research Studio & Multi-Hop Chat -->
+      <section class="content-panel">
+        <!-- Search & Query Form -->
+        <div class="card search-box-card">
+          <form id="query-form" class="query-form">
+            <div class="form-row">
+              <div class="input-wrapper">
+                <input 
+                  type="text" 
+                  id="query-input" 
+                  class="form-input" 
+                  placeholder="Ask a strategic question or enter competitor name (e.g., 'Compare Notion pricing against our strategy')..."
+                  required 
+                />
+              </div>
+              <button type="submit" id="btn-submit" class="btn btn-primary">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                <span>Synthesize</span>
+              </button>
+            </div>
+            <div class="form-options">
+              <label class="checkbox-label">
+                <input type="checkbox" id="chk-web-search" checked />
+                <span>Execute Live Web Search</span>
+              </label>
+              <span class="model-badge" id="active-model-tag">Model: Llama-3.3-70b (Groq)</span>
+            </div>
+          </form>
+        </div>
+
+        <!-- Research Timeline & Output Display -->
+        <div id="research-timeline" class="research-timeline">
+          <!-- Welcome Empty State -->
+          <div id="empty-state" class="empty-state-card">
+            <div class="empty-icon">
+              <svg width="42" height="42" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+            </div>
+            <h3>Ready for Strategic Competitive Research</h3>
+            <p>Upload your internal positioning document on the left, then enter a competitor query above to generate real-time gap analysis and strategic counter-points.</p>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Audit Log Parameter Modal -->
+    <div id="log-modal" class="modal-overlay hidden">
+      <div class="modal-card">
+        <div class="modal-header">
+          <h3 id="modal-title">Tool Execution Detail</h3>
+          <button id="modal-close" class="btn-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
+        <div class="modal-body">
+          <pre id="modal-content" class="code-block"></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
