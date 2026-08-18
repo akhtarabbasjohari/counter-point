@@ -39,4 +39,19 @@ class SearchRequestSerializer(serializers.Serializer):
 class QueryRequestSerializer(serializers.Serializer):
     query = serializers.CharField(required=True)
     execute_web_search = serializers.BooleanField(required=False, default=True)
+    session_id = serializers.CharField(required=False, allow_blank=True, default=None)
 
+class SynthesisRequestSerializer(serializers.Serializer):
+    query = serializers.CharField(required=True)
+    execute_web_search = serializers.BooleanField(required=False, default=True)
+    session_id = serializers.CharField(required=False, allow_blank=True, default=None)
+
+class SynthesisResponseSerializer(serializers.Serializer):
+    query = serializers.CharField()
+    synthesis = serializers.CharField()
+    model_used = serializers.CharField()
+    execution_time_ms = serializers.FloatField()
+    document_context_used = serializers.BooleanField()
+    document_name = serializers.CharField(allow_null=True)
+    web_sources = serializers.ListField(child=serializers.DictField())
+    recent_audit_logs = serializers.ListField(child=serializers.DictField())
