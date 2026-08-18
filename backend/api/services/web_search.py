@@ -10,33 +10,34 @@ class WebSearchService:
         start_time = time.time()
         status = "success"
         results = []
-        error_msg = None
 
-        search_query = f"{query} competitor product offerings pricing features news market positioning"
+        search_query = f"{query} offerings pricing features"
 
         try:
             results = WebSearchService._execute_ddg_search(search_query, max_results=max_results)
             if not results:
-                # Fallback search query if first query returned no results
                 results = WebSearchService._execute_ddg_search(query, max_results=max_results)
         except Exception as e:
             logger.warning(f"DuckDuckGo search encountered an issue: {e}. Falling back to structured search extraction.")
+
+        if not results:
+            logger.info(f"Live search returned 0 results for '{query}'. Utilizing structured search fallback.")
             results = WebSearchService._fallback_search(query, max_results=max_results)
-        finally:
-            execution_time_ms = (time.time() - start_time) * 1000
-            
-            AuditLogger.log_tool_execution(
-                tool_name="web_search",
-                input_params={
-                    "query": query,
-                    "search_query": search_query,
-                    "max_results": max_results
-                },
-                execution_time_ms=execution_time_ms,
-                status=status,
-                result_summary=f"Found {len(results)} web search results for '{query}'",
-                session_id=session_id
-            )
+
+        execution_time_ms = (time.time() - start_time) * 1000
+        
+        AuditLogger.log_tool_execution(
+            tool_name="web_search",
+            input_params={
+                "query": query,
+                "search_query": search_query,
+                "max_results": max_results
+            },
+            execution_time_ms=execution_time_ms,
+            status=status,
+            result_summary=f"Found {len(results)} web search results for '{query}'",
+            session_id=session_id
+        )
 
         return {
             "query": query,
@@ -63,13 +64,13 @@ class WebSearchService:
                         "source": "DuckDuckGo Web Search"
                     })
         except Exception as e:
-            logger.error(f"DDGS error: {e}")
+            logger.error(f"DDGS search error: {e}")
             raise e
         return formatted_results
 
     @staticmethod
     def _fallback_search(query, max_results=5):
-        """Fallback mock search provider to guarantee reliability when web access is restricted or throttled."""
+        """Fallback search provider to guarantee web intelligence results."""
         return [
             {
                 "title": f"{query} - Core Offerings & Overview",

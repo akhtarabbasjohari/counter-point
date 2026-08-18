@@ -6,8 +6,15 @@ from .audit_logger import AuditLogger
 
 logger = logging.getLogger(__name__)
 
+CANDIDATE_MODELS = [
+    os.getenv('GROQ_MODEL', 'llama-3.3-70b-versatile'),
+    "llama-3.1-8b-instant",
+    "gemma2-9b-it",
+    "deepseek-r1-distill-llama-70b",
+    "qwen-2.5-coder-32b"
+]
+
 class GroqReasoningEngine:
-    MODEL_NAME = "llama-3.3-70b-versatile"
 
     @staticmethod
     def synthesize_counterpoint(query, document_context=None, web_results=None, conversation_history=None, session_id="global"):
@@ -15,7 +22,7 @@ class GroqReasoningEngine:
         api_key = getattr(settings, 'GROQ_API_KEY', '') or os.getenv('GROQ_API_KEY', '')
         status = "success"
         synthesis_result = ""
-        model_used = GroqReasoningEngine.MODEL_NAME
+        model_used = None
 
         doc_summary = ""
         if document_context:
@@ -63,14 +70,16 @@ class GroqReasoningEngine:
             user_content += "LIVE WEB RESEARCH FINDINGS:\n[No live web search results provided.]\n\n"
 
         if api_key and api_key != "your_groq_api_key_here":
-            try:
-                synthesis_result = GroqReasoningEngine._call_groq_api(api_key, system_prompt, user_content)
-            except Exception as e:
-                logger.warning(f"Groq API call failed: {e}. Falling back to Rule-Based Synthesis Engine.")
-                model_used = "CounterPoint Rule-Based Engine (Fallback)"
-                synthesis_result = GroqReasoningEngine._generate_fallback_synthesis(query, document_context, web_results)
-        else:
-            logger.info("GROQ_API_KEY not configured. Using CounterPoint Rule-Based Engine.")
+            for model_candidate in CANDIDATE_MODELS:
+                try:
+                    synthesis_result = GroqReasoningEngine._call_groq_api(api_key, model_candidate, system_prompt, user_content)
+                    model_used = f"{model_candidate} (Groq)"
+                    break
+                except Exception as e:
+                    logger.warning(f"Groq model '{model_candidate}' failed: {e}. Trying next candidate...")
+
+        if not synthesis_result:
+            logger.info("Using CounterPoint Intelligent Rule-Based Engine.")
             model_used = "CounterPoint Rule-Based Engine"
             synthesis_result = GroqReasoningEngine._generate_fallback_synthesis(query, document_context, web_results)
 
@@ -98,11 +107,11 @@ class GroqReasoningEngine:
         }
 
     @staticmethod
-    def _call_groq_api(api_key, system_prompt, user_content):
+    def _call_groq_api(api_key, model_name, system_prompt, user_content):
         from groq import Groq
         client = Groq(api_key=api_key)
         response = client.chat.completions.create(
-            model=GroqReasoningEngine.MODEL_NAME,
+            model=model_name,
             messages=[
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_content}
