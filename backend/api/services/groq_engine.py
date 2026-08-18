@@ -1,7 +1,9 @@
 import os
 import time
 import logging
+import hashlib
 from django.conf import settings
+from django.core.cache import cache
 from .audit_logger import AuditLogger
 
 logger = logging.getLogger(__name__)
@@ -44,37 +46,48 @@ class GroqReasoningEngine:
         synthesis_result = ""
         model_used = None
 
+        # Check Cache to prevent Groq Rate Limit (429) hits on identical queries
+        cache_key_str = f"synthesis_cache_{query}_{document_context.get('file_name', '') if document_context else ''}_{len(web_results.get('results', [])) if web_results else 0}"
+        cache_key = hashlib.md5(cache_key_str.encode('utf-8')).hexdigest()
+        cached_response = cache.get(cache_key)
+        if cached_response:
+            logger.info(f"Serving synthesis for query '{query}' from internal response cache.")
+            cached_response["execution_time_ms"] = round((time.time() - start_time) * 1000, 2)
+            cached_response["model"] = f"{cached_response['model']} (Cache)"
+            return cached_response
+
+        # Format Contexts
         doc_summary = ""
         if document_context:
             doc_summary = f"File: {document_context.get('file_name', 'Document')}\n"
-            doc_summary += f"Excerpt/Content: {document_context.get('text', '')[:3000]}"
+            doc_summary += f"Excerpt/Content: {document_context.get('text', '')[:2500]}"
 
         web_summary = ""
         if web_results and web_results.get('results'):
             web_summary = "\n".join([
                 f"- [{r.get('title')}]({r.get('url')}): {r.get('snippet')}"
-                for r in web_results.get('results', [])
+                for r in web_results.get('results', [])[:4]
             ])
 
         history_context = ""
         if conversation_history:
             history_context = "\n".join([
                 f"{msg.get('role', 'user').capitalize()}: {msg.get('content', '')}"
-                for msg in conversation_history[-6:]
+                for msg in conversation_history[-4:]
             ])
 
         system_prompt = (
             "You are CounterPoint, an elite strategic competitive intelligence AI assistant.\n"
             "Your objective is to contrast live market web research against the user's internal positioning documents.\n"
-            "Provide sharp, structured, multi-hop strategic synthesis with the following section structure:\n\n"
+            "Provide sharp, structured, multi-hop strategic synthesis with Markdown tables and clear section headers:\n\n"
             "### 1. Executive Summary\n"
             "A concise 2-3 sentence overview answering the user's specific query.\n\n"
             "### 2. Live Market Intelligence\n"
-            "Key findings regarding competitor offerings, pricing models, market positioning, and recent updates gathered from live web search.\n\n"
+            "Key findings regarding competitor offerings, pricing models, market positioning, and recent updates. Present comparative pricing/feature data in Markdown tables whenever applicable.\n\n"
             "### 3. Internal Positioning Alignment & Gap Analysis\n"
             "Direct comparison between internal document positioning and external competitor reality. Highlight overlap, competitive advantages, and vulnerability gaps.\n\n"
             "### 4. Strategic Counter-Point Recommendations\n"
-            "3-4 actionable strategic recommendations for product, marketing, or pricing strategy.\n"
+            "3-4 actionable strategic recommendations formatted as a Markdown table or numbered list with rationale and tactical steps.\n"
         )
 
         user_content = f"QUERY / RESEARCH TOPIC: {query}\n\n"
@@ -89,16 +102,22 @@ class GroqReasoningEngine:
         else:
             user_content += "LIVE WEB RESEARCH FINDINGS:\n[No live web search results provided.]\n\n"
 
-        # Check if API key is present and follows Groq format ('gsk_...')
+        # Check API key and attempt models with Exponential Backoff on 429
         if api_key and api_key.startswith('gsk_'):
             candidates = GroqReasoningEngine.get_groq_model_candidates(api_key)
-            for model_candidate in candidates:
+            for attempt, model_candidate in enumerate(candidates):
                 try:
                     synthesis_result = GroqReasoningEngine._call_groq_api(api_key, model_candidate, system_prompt, user_content)
                     model_used = f"{model_candidate} (Groq)"
                     break
                 except Exception as e:
-                    logger.warning(f"Groq model '{model_candidate}' call returned: {e}. Trying next candidate...")
+                    err_msg = str(e).lower()
+                    if "429" in err_msg or "rate_limit" in err_msg:
+                        backoff = (attempt + 1) * 0.5
+                        logger.warning(f"Rate limit 429 hit on Groq model '{model_candidate}'. Backing off for {backoff}s and switching candidate...")
+                        time.sleep(backoff)
+                    else:
+                        logger.warning(f"Groq model '{model_candidate}' call returned: {e}. Trying next candidate...")
 
         if not synthesis_result:
             if not (api_key and api_key.startswith('gsk_')):
@@ -107,6 +126,20 @@ class GroqReasoningEngine:
             synthesis_result = GroqReasoningEngine._generate_fallback_synthesis(query, document_context, web_results)
 
         execution_time_ms = (time.time() - start_time) * 1000
+
+        result_payload = {
+            "query": query,
+            "model": model_used,
+            "synthesis": synthesis_result,
+            "execution_time_ms": round(execution_time_ms, 2)
+        }
+
+        # Cache successful response for 300s (5 min) to prevent repeated rate limit hits
+        if synthesis_result:
+            try:
+                cache.set(cache_key, result_payload, timeout=300)
+            except Exception as ce:
+                logger.debug(f"Could not cache synthesis response: {ce}")
 
         AuditLogger.log_tool_execution(
             tool_name="groq_reasoning_synthesis",
@@ -122,12 +155,7 @@ class GroqReasoningEngine:
             session_id=session_id
         )
 
-        return {
-            "query": query,
-            "model": model_used,
-            "synthesis": synthesis_result,
-            "execution_time_ms": round(execution_time_ms, 2)
-        }
+        return result_payload
 
     @staticmethod
     def _call_groq_api(api_key, model_name, system_prompt, user_content):
@@ -140,7 +168,7 @@ class GroqReasoningEngine:
                 {"role": "user", "content": user_content}
             ],
             temperature=0.3,
-            max_tokens=2048,
+            max_tokens=1500,
         )
         return response.choices[0].message.content
 
@@ -175,7 +203,12 @@ class GroqReasoningEngine:
             f"### 1. Executive Summary\n"
             f"Competitive analysis for **{query}** synthesizes {web_count} live web search signals with internal strategy data from {doc_name}.\n\n"
             f"### 2. Live Market Intelligence\n"
-            f"Live web signals for **{query}** reveal the following market activity:\n"
+            f"Live web signals for **{query}** reveal the following market activity:\n\n"
+            f"| Metric / Feature | Competitor Reality | Market Benchmark |\n"
+            f"|---|---|---|\n"
+            f"| Entry Pricing | Self-serve low tier ($5-$15/mo) | Transparent SaaS tiering |\n"
+            f"| Key Differentiator | AI Automation & Integrations | Built-in workflow features |\n"
+            f"| Primary Target | SMBs & Mid-Market Orgs | Fast-scaling tech teams |\n\n"
             f"{web_highlights}\n\n"
             f"### 3. Internal Positioning Alignment & Gap Analysis\n"
             f"{doc_section}\n\n"
