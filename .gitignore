@@ -1,6 +1,27 @@
+# Python / Django
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+.venv
+*.sqlite3
+db.sqlite3
+media/
+staticfiles/
+
+# Node / Frontend
 node_modules/
+frontend/node_modules/
 dist/
+frontend/dist/
 build/
+
+# Environment & Logs
 .env
 .env.local
 *.log
+.DS_Store
