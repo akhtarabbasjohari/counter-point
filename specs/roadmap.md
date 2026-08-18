@@ -8,7 +8,7 @@ This roadmap breaks down the implementation of CounterPoint into 5 small, increm
 - [x] Create project specifications in `specs/` (`mission.md`, `tech-stack.md`, `roadmap.md`).
 - [x] Initialize Python virtual environment (`venv`), Django project (`counterpoint`), and DRF app (`api`).
 - [x] Configure `django-cors-headers`, environment variables (`python-dotenv`), and `requirements.txt`.
-- [x] Setup initial Vite frontend structure and base CSS design tokens.
+- [x] Setup initial Vite frontend structure, base CSS design tokens, and Vitest test runner.
 
 ## Phase 2: Document Processing & Timestamped Tool Logger
 - [ ] Implement DRF file upload view & serializer supporting `.pdf` and `.txt` files using `MultiPartParser`.

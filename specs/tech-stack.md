@@ -15,7 +15,9 @@ CounterPoint is built using a robust Python / Django REST Framework (DRF) backen
 ### Frontend Interface
 - **Tooling**: Vite for fast local development and lightweight bundling
 - **UI Paradigm**: HTML5 + Vanilla CSS design system (custom design tokens, responsive flex/grid layouts, dynamic micro-interactions, no heavy CSS frameworks)
+- **Responsive Architecture**: Mobile-first fluid CSS grid/flexbox layout with dynamic media query breakpoints (`@media (max-width: 1024px)`, `@media (max-width: 640px)`), adaptable sidebar drawer, and fluid touch controls for desktop, tablet, and mobile devices
 - **Client Logic**: Vanilla JS / TypeScript for sending API requests, handling doc uploads, rendering findings, and displaying live audit logs
+- **Testing & Validation**: Vitest for Vite-native unit and integration test validation (`npm run test`)
 
 ### AI & Reasoning Engine
 - **LLM Provider**: `groq` Python SDK (High-throughput inference for multi-hop reasoning, prompt synthesis, and tool orchestration)

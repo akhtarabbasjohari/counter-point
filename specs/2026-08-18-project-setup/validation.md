@@ -16,6 +16,8 @@ To verify that Phase 1 implementation is successful and ready to be merged into 
 ## 2. Frontend Verification Checks
 - [ ] **Vite Dev Server Check**: Running `npm run dev` inside `frontend/` launches development server without errors on port `5173`.
 - [ ] **Vite Production Build Check**: Running `npm run build` inside `frontend/` generates production bundle in `frontend/dist/` without compilation warnings or errors.
+- [ ] **Vitest Unit Test Check**: Running `npm run test` inside `frontend/` executes Vitest suite and passes all unit tests cleanly.
+- [ ] **Responsive Design Check**: UI layout fluidly adapts across desktop (1200px+), tablet (768px - 1024px), and mobile viewports (<640px) without horizontal scrolling or content clipping.
 
 ## 3. Integration & CORS Verification
 - [ ] **Cross-Origin API Call**: Fetching `/api/health/` from `http://localhost:5173` via browser/JavaScript client returns HTTP 200 without CORS header blocking errors.

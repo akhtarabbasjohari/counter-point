@@ -160,6 +160,15 @@ function bindEvents() {
     }
   });
 
+  // Mobile Sidebar Toggle
+  const btnToggleSidebar = document.getElementById('btn-toggle-sidebar');
+  const sidebarPanel = document.querySelector('.sidebar-panel');
+  if (btnToggleSidebar && sidebarPanel) {
+    btnToggleSidebar.addEventListener('click', () => {
+      sidebarPanel.classList.toggle('collapsed');
+    });
+  }
+
   // Modal Close
   modalClose.addEventListener('click', () => logModal.classList.add('hidden'));
   logModal.addEventListener('click', (e) => {
