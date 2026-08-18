@@ -6,16 +6,35 @@ from .audit_logger import AuditLogger
 
 logger = logging.getLogger(__name__)
 
-CANDIDATE_MODELS = [
-    os.getenv('GROQ_MODEL', 'llama-3.3-70b-versatile'),
-    "llama-3.3-70b-specdec",
-    "gpt-oss-120b",
-    "gpt-oss-20b",
-    "qwen-3.6-27b",
-    "llama-3.1-8b-instant",
+PRIMARY_CANDIDATES = [
+    os.getenv('GROQ_MODEL', 'openai/gpt-oss-120b'),
+    "openai/gpt-oss-120b",
+    "openai/gpt-oss-20b",
+    "qwen/qwen3.6-27b",
+    "groq/compound",
+    "groq/compound-mini",
+    "llama-3.3-70b-versatile",
+    "llama-3.1-8b-instant"
 ]
 
 class GroqReasoningEngine:
+
+    @classmethod
+    def get_groq_model_candidates(cls, api_key):
+        candidates = list(PRIMARY_CANDIDATES)
+        try:
+            from groq import Groq
+            client = Groq(api_key=api_key)
+            fetched_models = [
+                m.id for m in client.models.list().data 
+                if not any(excluded in m.id.lower() for excluded in ['whisper', 'guard', 'orpheus', 'vision', 'audio'])
+            ]
+            for m in fetched_models:
+                if m not in candidates:
+                    candidates.append(m)
+        except Exception as e:
+            logger.debug(f"Could not list Groq models dynamically: {e}")
+        return candidates
 
     @staticmethod
     def synthesize_counterpoint(query, document_context=None, web_results=None, conversation_history=None, session_id="global"):
@@ -72,7 +91,8 @@ class GroqReasoningEngine:
 
         # Check if API key is present and follows Groq format ('gsk_...')
         if api_key and api_key.startswith('gsk_'):
-            for model_candidate in CANDIDATE_MODELS:
+            candidates = GroqReasoningEngine.get_groq_model_candidates(api_key)
+            for model_candidate in candidates:
                 try:
                     synthesis_result = GroqReasoningEngine._call_groq_api(api_key, model_candidate, system_prompt, user_content)
                     model_used = f"{model_candidate} (Groq)"
@@ -127,7 +147,7 @@ class GroqReasoningEngine:
     @staticmethod
     def _generate_fallback_synthesis(query, document_context, web_results):
         doc_name = document_context.get('file_name', 'Uploaded Strategy File') if document_context else "None"
-        word_count = document_context.get('word_count', 0) if document_count else 0
+        word_count = document_context.get('word_count', 0) if document_context else 0
         web_count = len(web_results.get('results', [])) if web_results else 0
 
         web_highlights = ""
