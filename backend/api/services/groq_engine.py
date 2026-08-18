@@ -8,10 +8,11 @@ logger = logging.getLogger(__name__)
 
 CANDIDATE_MODELS = [
     os.getenv('GROQ_MODEL', 'llama-3.3-70b-versatile'),
+    "llama-3.3-70b-specdec",
+    "gpt-oss-120b",
+    "gpt-oss-20b",
+    "qwen-3.6-27b",
     "llama-3.1-8b-instant",
-    "gemma2-9b-it",
-    "deepseek-r1-distill-llama-70b",
-    "qwen-2.5-coder-32b"
 ]
 
 class GroqReasoningEngine:
@@ -69,17 +70,19 @@ class GroqReasoningEngine:
         else:
             user_content += "LIVE WEB RESEARCH FINDINGS:\n[No live web search results provided.]\n\n"
 
-        if api_key and api_key != "your_groq_api_key_here":
+        # Check if API key is present and follows Groq format ('gsk_...')
+        if api_key and api_key.startswith('gsk_'):
             for model_candidate in CANDIDATE_MODELS:
                 try:
                     synthesis_result = GroqReasoningEngine._call_groq_api(api_key, model_candidate, system_prompt, user_content)
                     model_used = f"{model_candidate} (Groq)"
                     break
                 except Exception as e:
-                    logger.warning(f"Groq model '{model_candidate}' failed: {e}. Trying next candidate...")
+                    logger.warning(f"Groq model '{model_candidate}' call returned: {e}. Trying next candidate...")
 
         if not synthesis_result:
-            logger.info("Using CounterPoint Intelligent Rule-Based Engine.")
+            if not (api_key and api_key.startswith('gsk_')):
+                logger.info("GROQ_API_KEY is missing or invalid. Using CounterPoint Intelligent Rule-Based Engine.")
             model_used = "CounterPoint Rule-Based Engine"
             synthesis_result = GroqReasoningEngine._generate_fallback_synthesis(query, document_context, web_results)
 
@@ -124,7 +127,7 @@ class GroqReasoningEngine:
     @staticmethod
     def _generate_fallback_synthesis(query, document_context, web_results):
         doc_name = document_context.get('file_name', 'Uploaded Strategy File') if document_context else "None"
-        word_count = document_context.get('word_count', 0) if document_context else 0
+        word_count = document_context.get('word_count', 0) if document_count else 0
         web_count = len(web_results.get('results', [])) if web_results else 0
 
         web_highlights = ""
