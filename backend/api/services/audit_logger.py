@@ -24,7 +24,7 @@ class AuditLogger:
             SESSION_AUDIT_LOGS[session_id] = []
 
     @staticmethod
-    def log_tool_execution(tool_name, input_params, execution_time_ms, status="success", result_summary="", session_id="global"):
+    def log_tool_execution(tool_name, input_params, execution_time_ms, status="SUCCESS", result_summary="", error_message=None, session_id="global"):
         timestamp = datetime.datetime.now(datetime.timezone.utc).isoformat()
         
         # Sanitize input params to avoid leaking full document contents in brief log view
@@ -35,13 +35,18 @@ class AuditLogger:
             else:
                 sanitized_params[k] = v
 
+        status_str = status.upper() if isinstance(status, str) else "SUCCESS"
+        if status_str == "ERROR" and not error_message:
+            error_message = str(result_summary)
+
         entry = {
             "timestamp": timestamp,
             "tool_name": tool_name,
             "input_params": sanitized_params,
             "execution_time_ms": round(execution_time_ms, 2),
-            "status": status,
-            "result_summary": str(result_summary)[:300] if result_summary else ""
+            "status": status_str,
+            "result_summary": str(result_summary)[:300] if result_summary else "",
+            "error_message": error_message
         }
 
         if session_id not in SESSION_AUDIT_LOGS:
@@ -53,8 +58,9 @@ class AuditLogger:
         if len(SESSION_AUDIT_LOGS[session_id]) > 100:
             SESSION_AUDIT_LOGS[session_id] = SESSION_AUDIT_LOGS[session_id][:100]
 
-        logger.info(f"Tool: {tool_name} | Status: {status} | Duration: {entry['execution_time_ms']}ms | Params: {sanitized_params}")
+        logger.info(f"Tool: {tool_name} | Status: {status_str} | Duration: {entry['execution_time_ms']}ms | Params: {sanitized_params}")
         return entry
+
 
 class audit_tool:
     """Decorator / Context manager to measure execution time and record audit log."""

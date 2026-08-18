@@ -11,10 +11,10 @@ This roadmap breaks down the implementation of CounterPoint into 5 small, increm
 - [x] Setup initial Vite frontend structure, base CSS design tokens, and Vitest test runner.
 
 ## Phase 2: Document Processing & Timestamped Tool Logger
-- [ ] Implement DRF file upload view & serializer supporting `.pdf` and `.txt` files using `MultiPartParser`.
-- [ ] Build document parsing service using `pdfplumber` / `pypdf` for PDFs and UTF-8 stream reader for text files.
-- [ ] Implement timestamped audit logger module (Python `logging` or custom middleware) tracking tool name, parameters, execution timestamp, and status.
-- [ ] Write Django unit tests for document parsing and tool logger components.
+- [x] Implement DRF file upload view & serializer supporting `.pdf` and `.txt` files using `MultiPartParser`.
+- [x] Build document parsing service using `pdfplumber` / `pypdf` for PDFs and UTF-8 stream reader for text files.
+- [x] Implement timestamped audit logger module (Python `logging` or custom middleware) tracking tool name, parameters, execution timestamp, and status.
+- [x] Write Django unit tests for document parsing and tool logger components.
 
 ## Phase 3: Web Search & Groq Reasoning Engine
 - [ ] Integrate official `groq` Python SDK with environment-configured API keys.

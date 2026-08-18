@@ -46,6 +46,7 @@ class DocumentUploadView(APIView):
                 'file_name': parsed_doc['file_name'],
                 'file_type': parsed_doc['file_type'],
                 'file_size_bytes': parsed_doc['file_size_bytes'],
+                'page_count': parsed_doc.get('page_count', 1),
                 'word_count': parsed_doc['word_count'],
                 'character_count': parsed_doc['character_count'],
                 'text': parsed_doc['text']
@@ -58,6 +59,7 @@ class DocumentUploadView(APIView):
                     "file_name": parsed_doc['file_name'],
                     "file_type": parsed_doc['file_type'],
                     "file_size_bytes": parsed_doc['file_size_bytes'],
+                    "page_count": parsed_doc.get('page_count', 1),
                     "word_count": parsed_doc['word_count'],
                     "character_count": parsed_doc['character_count'],
                     "preview": parsed_doc['text'][:500] + ("..." if len(parsed_doc['text']) > 500 else "")
