@@ -21,7 +21,9 @@ CounterPoint is built using a robust Python / Django REST Framework (DRF) backen
 
 ### AI & Reasoning Engine
 - **LLM Provider**: `groq` Python SDK (High-throughput inference for multi-hop reasoning, prompt synthesis, and tool orchestration)
+- **Coreference Resolution Engine**: `QueryRewriter` service (`backend/api/services/query_rewriter.py`) utilizing session memory context to resolve ambiguous multi-turn follow-up queries (e.g. *"How does our strategy compare to that?"* -> *"Compare CounterPoint strategy with Salesforce revenue & positioning"*) before web search execution
 - **Web Search Module**: Custom Python search integration using web search APIs (e.g., Tavily / Serper / DuckDuckGo) for fetching live competitor offerings, pricing, and news updates
+
 
 ### Document Processing
 - **PDF Parser**: `pdfplumber` (or `pypdf`) for extracting structured text from uploaded PDF positioning documents

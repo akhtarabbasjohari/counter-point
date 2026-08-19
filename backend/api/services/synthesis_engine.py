@@ -1,6 +1,7 @@
 import time
 import logging
 from .session_manager import SessionManager
+from .query_rewriter import QueryRewriter
 from .web_search import WebSearchService
 from .groq_engine import GroqReasoningEngine
 from .audit_logger import AuditLogger
@@ -10,7 +11,8 @@ logger = logging.getLogger(__name__)
 class MultiHopSynthesisEngine:
     """
     Orchestrates continuous multi-turn synthesis by retrieving session memory (positioning doc + context),
-    executing targeted live web research tools, and running Groq LLM synthesis.
+    resolving multi-turn coreference ambiguities, executing targeted live web research tools,
+    and running Groq LLM synthesis.
     """
 
     @classmethod
@@ -32,21 +34,28 @@ class MultiHopSynthesisEngine:
             session_id=session_id
         )
 
-        # 2. Tool Execution: Web Search
+        # 2. Coreference Resolution & Disambiguation
+        search_query = QueryRewriter.resolve_query(
+            query=query,
+            conversation_history=conversation_history,
+            session_id=session_id
+        )
+
+        # 3. Tool Execution: Web Search using Resolved Standalone Query
         web_results = None
         if execute_web_search:
-            web_results = WebSearchService.search_competitor(query=query, max_results=5, session_id=session_id)
+            web_results = WebSearchService.search_competitor(query=search_query, max_results=5, session_id=session_id)
 
-        # 3. Reasoning & Synthesis: Groq LLM Engine
+        # 4. Reasoning & Synthesis: Groq LLM Engine
         synthesis_response = GroqReasoningEngine.synthesize_counterpoint(
-            query=query,
+            query=search_query,
             document_context=document_context,
             web_results=web_results,
             conversation_history=conversation_history,
             session_id=session_id
         )
 
-        # 4. Update Conversation Memory
+        # 5. Update Conversation Memory
         SessionManager.append_conversation_message(session_id, "user", query)
         SessionManager.append_conversation_message(session_id, "assistant", synthesis_response["synthesis"])
 
@@ -56,6 +65,7 @@ class MultiHopSynthesisEngine:
             tool_name="multihop_synthesis_complete",
             input_params={
                 "query": query,
+                "resolved_query": search_query,
                 "session_id": session_id,
                 "execute_web_search": execute_web_search
             },
@@ -67,6 +77,7 @@ class MultiHopSynthesisEngine:
 
         return {
             "query": query,
+            "resolved_query": search_query,
             "synthesis": synthesis_response["synthesis"],
             "model_used": synthesis_response["model"],
             "execution_time_ms": round(total_execution_time_ms, 2),

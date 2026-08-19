@@ -36,3 +36,10 @@ This roadmap breaks down the implementation of CounterPoint into 5 small, increm
   - Interactive multi-turn chat / Q&A section
 - [x] Connect frontend to Django REST Framework API endpoints.
 - [x] Perform full end-to-end user workflow testing and polish visual design.
+
+## Phase 6: Multi-Turn Conversation Coreference Resolution & Entity Tracking
+- [ ] Implement `QueryRewriter` service (`backend/api/services/query_rewriter.py`) to resolve multi-turn pronouns (`that`, `it`, `them`) into explicit standalone queries before search.
+- [ ] Wire `QueryRewriter` into `MultiHopSynthesisEngine` prior to `WebSearchService` invocation.
+- [ ] Update `SessionManager` to track active competitor entities and conversation topic history.
+- [ ] Add Django unit/integration tests for multi-turn coreference resolution.
+
