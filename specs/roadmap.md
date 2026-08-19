@@ -43,4 +43,12 @@ This roadmap breaks down the implementation of CounterPoint into 5 small, increm
 - [x] Update `SessionManager` to track active competitor entities and conversation topic history.
 - [x] Add Django unit/integration tests for multi-turn coreference resolution.
 
+## Phase 7: Stateful Agent Memory Architecture & LangGraph Graph Engine
+- [ ] Install and configure `langgraph` and `langchain-core` Python dependencies.
+- [ ] Build `AgentMemoryState` graph state class maintaining dynamic context (`messages`, `active_entities`, `document_context`, `resolved_topic`).
+- [ ] Construct multi-node `StateGraph` execution pipeline (`QueryAnalysis` -> `StateMemoryLookup` -> `WebResearch` -> `StrategySynthesis`) with `MemorySaver` checkpointer.
+- [ ] Integrate `LangGraphEngine` into Django REST API synthesis endpoints replacing rigid static rule-based query handling.
+- [ ] Write Django backend unit and integration tests verifying graph state persistence and multi-turn state transitions across session turns.
+
+
 

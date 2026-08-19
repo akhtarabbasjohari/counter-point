@@ -41,4 +41,4 @@ class QueryRewriterTests(TestCase):
 
         logs = AuditLogger.get_logs(self.session_id)
         tool_names = [l["tool_name"] for l in logs]
-        self.assertIn("query_coreference_resolution", tool_names)
+        self.assertTrue(any(t in tool_names for t in ["langgraph_query_analysis", "query_coreference_resolution"]))
