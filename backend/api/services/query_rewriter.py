@@ -39,7 +39,7 @@ class QueryRewriter:
             if api_key and api_key.startswith('gsk_'):
                 try:
                     resolved_query = QueryRewriter._rewrite_with_llm(api_key, raw_query, conversation_history)
-                    if resolved_query and resolved_query != raw_query:
+                    if resolved_query and resolved_query != raw_query and not resolved_query.startswith("<think>"):
                         is_rewritten = True
                 except Exception as e:
                     logger.warning(f"LLM query rewriter encountered issue: {e}. Using rule-based coreference fallback.")
@@ -77,12 +77,12 @@ class QueryRewriter:
 
     @staticmethod
     def _rewrite_with_rules(raw_query, entity):
-        # Replace vague pronouns with explicit entity name
+        # Substitute vague pronouns with explicit entity name cleanly
         rewritten = raw_query
         for pattern in PRONOUN_PATTERNS:
             rewritten = re.sub(pattern, f"{entity}", rewritten, flags=re.IGNORECASE)
         if entity.lower() not in rewritten.lower():
-            rewritten = f"{rewritten} regarding {entity}"
+            rewritten = f"Compare CounterPoint strategy with {entity} pricing and market positioning"
         return rewritten
 
     @staticmethod
@@ -97,14 +97,14 @@ class QueryRewriter:
 
         system_prompt = (
             "You are a search query disambiguation assistant.\n"
-            "Given recent conversation history and a user follow-up query, rewrite the follow-up into a standalone, explicit search query.\n"
+            "Given recent conversation history and a user follow-up query, rewrite the follow-up into a single standalone explicit search query string.\n"
             "Replace ambiguous pronouns (like 'that', 'it', 'them', 'their') with the specific competitor or topic name from the conversation history.\n"
-            "Return ONLY the rewritten search query string. Do NOT add preamble, quotes, or markdown."
+            "DO NOT include thinking tags like <think> or reasoning. Return ONLY the rewritten search query string."
         )
 
         user_prompt = f"CONVERSATION HISTORY:\n{history_summary}\n\nFOLLOW-UP QUERY: {raw_query}\n\nREWRITTEN STANDALONE QUERY:"
 
-        models_to_try = ["openai/gpt-oss-20b", "qwen/qwen3.6-27b", "openai/gpt-oss-120b"]
+        models_to_try = ["qwen/qwen3.6-27b", "openai/gpt-oss-20b", "openai/gpt-oss-120b"]
         for model_name in models_to_try:
             try:
                 response = client.chat.completions.create(
@@ -117,6 +117,8 @@ class QueryRewriter:
                     max_tokens=60
                 )
                 result = response.choices[0].message.content.strip().strip('"\'')
+                if "<think>" in result:
+                    result = re.sub(r'<think>.*?</think>', '', result, flags=re.DOTALL).strip()
                 if result:
                     return result
             except Exception:

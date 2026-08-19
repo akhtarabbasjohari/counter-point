@@ -79,6 +79,7 @@ class GroqReasoningEngine:
         system_prompt = (
             "You are CounterPoint, an elite strategic competitive intelligence AI assistant.\n"
             "Your objective is to contrast live market web research against the user's internal positioning documents.\n"
+            "CRITICAL TABLE RULE: In Section 2 (Live Market Intelligence) and Section 3 (Internal Positioning Alignment), use explicit company/product names (e.g. 'Salesforce', 'HubSpot', 'Notion', 'ClickUp') in table rows and column headers. NEVER put raw user question phrases or pronouns as competitor names.\n\n"
             "Provide sharp, structured, multi-hop strategic synthesis with Markdown tables and clear section headers:\n\n"
             "### 1. Executive Summary\n"
             "A concise 2-3 sentence overview answering the user's specific query.\n\n"
