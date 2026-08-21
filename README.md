@@ -1,4 +1,4 @@
-# 🎯 CounterPoint
+#  CounterPoint
 
 > **Real-Time Competitive Intelligence & Strategy Alignment Agent**
 
@@ -6,19 +6,19 @@ CounterPoint is an AI-powered competitive analysis platform built with **Django 
 
 ---
 
-## ✨ Features
+##  Features
 
-- **🌐 Live Web Competitor Research**: Automatically queries live web search engines to extract competitor offerings, pricing strategies, market positioning, and recent activity.
-- **📄 Internal Positioning Document Analysis**: Supports PDF and TXT file uploads (`pdfplumber` / `pypdf`) to analyze internal positioning guidelines, battlecards, and product strategy context.
-- **🧠 Stateful Agent Memory (LangGraph)**: Maintains conversational graph state (`StateGraph` + `MemorySaver`) across multi-turn sessions, ensuring follow-up queries refine previous research without loss of context.
-- **🔍 Coreference Resolution Engine**: Integrates a `QueryRewriter` service that intelligently resolves context-dependent follow-up questions (e.g., *"How does our pricing compare to theirs?"*) into fully qualified search queries.
-- **⚡ Multi-Hop Reasoning & Synthesis**: Leverages **Groq API** high-throughput inference to synthesize complex multi-source insights combining live web results and uploaded strategy files.
-- **📜 Transparent Audit Trail**: Every background tool call (web search, document parsing, synthesis) is logged with precise ISO 8601 timestamps, inputs, execution times, and status.
-- **📱 Responsive Single-Page UI**: Clean, mobile-first interface designed with vanilla CSS grid/flexbox and dynamic viewports (mobile, tablet, desktop).
+- **Live Web Competitor Research**: Automatically queries live web search engines to extract competitor offerings, pricing strategies, market positioning, and recent activity.
+- **Internal Positioning Document Analysis**: Supports PDF and TXT file uploads (`pdfplumber` / `pypdf`) to analyze internal positioning guidelines, battlecards, and product strategy context.
+- **Stateful Agent Memory (LangGraph)**: Maintains conversational graph state (`StateGraph` + `MemorySaver`) across multi-turn sessions, ensuring follow-up queries refine previous research without loss of context.
+- **Coreference Resolution Engine**: Integrates a `QueryRewriter` service that intelligently resolves context-dependent follow-up questions (e.g., *"How does our pricing compare to theirs?"*) into fully qualified search queries.
+- **Multi-Hop Reasoning & Synthesis**: Leverages **Groq API** high-throughput inference to synthesize complex multi-source insights combining live web results and uploaded strategy files.
+- **Transparent Audit Trail**: Every background tool call (web search, document parsing, synthesis) is logged with precise ISO 8601 timestamps, inputs, execution times, and status.
+- **Responsive Single-Page UI**: Clean, mobile-first interface designed with vanilla CSS grid/flexbox and dynamic viewports (mobile, tablet, desktop).
 
 ---
 
-## 🏗 Architecture & Data Flow
+##  Architecture & Data Flow
 
 ```mermaid
 flowchart TD
@@ -42,7 +42,7 @@ flowchart TD
 
 ---
 
-## 🛠 Tech Stack
+##  Tech Stack
 
 ### Backend
 - **Framework**: Python 3.11+, Django 5.x, Django REST Framework (DRF)
@@ -59,7 +59,7 @@ flowchart TD
 
 ---
 
-## 🚀 Getting Started
+##  Getting Started
 
 ### Prerequisites
 - **Python**: v3.11+
@@ -134,7 +134,7 @@ flowchart TD
 
 ---
 
-## 🧪 Running Tests
+## Running Tests
 
 ### Backend Unit Tests
 Run Django backend tests for API endpoints, session memory, query rewriter, and synthesis engine:
@@ -152,7 +152,7 @@ npm run test
 
 ---
 
-## 📁 Repository Structure
+## Repository Structure
 
 ```
 counter-point/
@@ -186,6 +186,6 @@ counter-point/
 
 ---
 
-## 📝 License
+## License
 
 This project is licensed under the MIT License.
