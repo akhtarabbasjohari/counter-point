@@ -36,3 +36,19 @@ This roadmap breaks down the implementation of CounterPoint into 5 small, increm
   - Interactive multi-turn chat / Q&A section
 - [x] Connect frontend to Django REST Framework API endpoints.
 - [x] Perform full end-to-end user workflow testing and polish visual design.
+
+## Phase 6: Multi-Turn Conversation Coreference Resolution & Entity Tracking
+- [x] Implement `QueryRewriter` service (`backend/api/services/query_rewriter.py`) to resolve multi-turn pronouns (`that`, `it`, `them`) into explicit standalone queries before search.
+- [x] Wire `QueryRewriter` into `MultiHopSynthesisEngine` prior to `WebSearchService` invocation.
+- [x] Update `SessionManager` to track active competitor entities and conversation topic history.
+- [x] Add Django unit/integration tests for multi-turn coreference resolution.
+
+## Phase 7: Stateful Agent Memory Architecture & LangGraph Graph Engine
+- [ ] Install and configure `langgraph` and `langchain-core` Python dependencies.
+- [ ] Build `AgentMemoryState` graph state class maintaining dynamic context (`messages`, `active_entities`, `document_context`, `resolved_topic`).
+- [ ] Construct multi-node `StateGraph` execution pipeline (`QueryAnalysis` -> `StateMemoryLookup` -> `WebResearch` -> `StrategySynthesis`) with `MemorySaver` checkpointer.
+- [ ] Integrate `LangGraphEngine` into Django REST API synthesis endpoints replacing rigid static rule-based query handling.
+- [ ] Write Django backend unit and integration tests verifying graph state persistence and multi-turn state transitions across session turns.
+
+
+
