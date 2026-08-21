@@ -156,4 +156,3 @@ class UnitServiceTests(TestCase):
         updated_logs = AuditLogger.get_logs("test_session")
         self.assertEqual(len(updated_logs), 2)
         self.assertEqual(updated_logs[0]["tool_name"], "decorated_tool")
-

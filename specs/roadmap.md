@@ -17,22 +17,38 @@ This roadmap breaks down the implementation of CounterPoint into 5 small, increm
 - [x] Write Django unit tests for document parsing and tool logger components.
 
 ## Phase 3: Web Search & Groq Reasoning Engine
-- [ ] Integrate official `groq` Python SDK with environment-configured API keys.
-- [ ] Build Python web search module (fetching current offerings, pricing, and recent competitor news).
-- [ ] Implement prompt strategy for competitor analysis that triggers web search tool execution.
-- [ ] Wire web search execution through the timestamped audit logger.
+- [x] Integrate official `groq` Python SDK with environment-configured API keys.
+- [x] Build Python web search module (fetching current offerings, pricing, and recent competitor news).
+- [x] Implement prompt strategy for competitor analysis that triggers web search tool execution.
+- [x] Wire web search execution through the timestamped audit logger.
 
 ## Phase 4: Session Memory & Multi-Hop Querying
-- [ ] Implement session manager using Django sessions / cache framework to store document context and conversation history.
-- [ ] Build multi-hop synthesis engine in Python combining internal positioning document context with live web research findings.
-- [ ] Support continuous follow-up questions without losing prior research state.
-- [ ] Verify multi-hop research accuracy with test queries.
+- [x] Implement session manager using Django sessions / cache framework to store document context and conversation history.
+- [x] Build multi-hop synthesis engine in Python combining internal positioning document context with live web research findings.
+- [x] Support continuous follow-up questions without losing prior research state.
+- [x] Verify multi-hop research accuracy with test queries.
 
 ## Phase 5: UI Dashboard & End-to-End Verification
-- [ ] Build clean, responsive single-page web UI (Vite + Vanilla CSS/HTML):
+- [x] Build clean, responsive single-page web UI (Vite + Vanilla CSS/HTML):
   - Competitor search input & document upload dropzone
   - Findings summary display panel (offerings, pricing, gap analysis)
   - Real-time timestamped audit log viewer
   - Interactive multi-turn chat / Q&A section
-- [ ] Connect frontend to Django REST Framework API endpoints.
-- [ ] Perform full end-to-end user workflow testing and polish visual design.
+- [x] Connect frontend to Django REST Framework API endpoints.
+- [x] Perform full end-to-end user workflow testing and polish visual design.
+
+## Phase 6: Multi-Turn Conversation Coreference Resolution & Entity Tracking
+- [x] Implement `QueryRewriter` service (`backend/api/services/query_rewriter.py`) to resolve multi-turn pronouns (`that`, `it`, `them`) into explicit standalone queries before search.
+- [x] Wire `QueryRewriter` into `MultiHopSynthesisEngine` prior to `WebSearchService` invocation.
+- [x] Update `SessionManager` to track active competitor entities and conversation topic history.
+- [x] Add Django unit/integration tests for multi-turn coreference resolution.
+
+## Phase 7: Stateful Agent Memory Architecture & LangGraph Graph Engine
+- [ ] Install and configure `langgraph` and `langchain-core` Python dependencies.
+- [ ] Build `AgentMemoryState` graph state class maintaining dynamic context (`messages`, `active_entities`, `document_context`, `resolved_topic`).
+- [ ] Construct multi-node `StateGraph` execution pipeline (`QueryAnalysis` -> `StateMemoryLookup` -> `WebResearch` -> `StrategySynthesis`) with `MemorySaver` checkpointer.
+- [ ] Integrate `LangGraphEngine` into Django REST API synthesis endpoints replacing rigid static rule-based query handling.
+- [ ] Write Django backend unit and integration tests verifying graph state persistence and multi-turn state transitions across session turns.
+
+
+
