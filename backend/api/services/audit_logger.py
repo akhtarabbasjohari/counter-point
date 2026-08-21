@@ -1,5 +1,6 @@
 import datetime
 import logging
+import threading
 import time
 
 logger = logging.getLogger('counterpoint.audit')
@@ -10,18 +11,21 @@ if not logger.handlers:
     logger.addHandler(handler)
     logger.setLevel(logging.INFO)
 
-# In-memory session log storage
+# In-memory session log storage with thread lock
 SESSION_AUDIT_LOGS = {}
+LOG_LOCK = threading.Lock()
 
 class AuditLogger:
     @staticmethod
     def get_logs(session_id="global"):
-        return SESSION_AUDIT_LOGS.get(session_id, [])
+        with LOG_LOCK:
+            return list(SESSION_AUDIT_LOGS.get(session_id, []))
 
     @staticmethod
     def clear_logs(session_id="global"):
-        if session_id in SESSION_AUDIT_LOGS:
-            SESSION_AUDIT_LOGS[session_id] = []
+        with LOG_LOCK:
+            if session_id in SESSION_AUDIT_LOGS:
+                SESSION_AUDIT_LOGS[session_id] = []
 
     @staticmethod
     def log_tool_execution(tool_name, input_params, execution_time_ms, status="SUCCESS", result_summary="", error_message=None, session_id="global"):
@@ -49,14 +53,15 @@ class AuditLogger:
             "error_message": error_message
         }
 
-        if session_id not in SESSION_AUDIT_LOGS:
-            SESSION_AUDIT_LOGS[session_id] = []
+        with LOG_LOCK:
+            if session_id not in SESSION_AUDIT_LOGS:
+                SESSION_AUDIT_LOGS[session_id] = []
 
-        SESSION_AUDIT_LOGS[session_id].insert(0, entry)  # latest first
-        
-        # Keep maximum 100 log entries per session
-        if len(SESSION_AUDIT_LOGS[session_id]) > 100:
-            SESSION_AUDIT_LOGS[session_id] = SESSION_AUDIT_LOGS[session_id][:100]
+            SESSION_AUDIT_LOGS[session_id].insert(0, entry)  # latest first
+            
+            # Keep maximum 100 log entries per session
+            if len(SESSION_AUDIT_LOGS[session_id]) > 100:
+                SESSION_AUDIT_LOGS[session_id] = SESSION_AUDIT_LOGS[session_id][:100]
 
         logger.info(f"Tool: {tool_name} | Status: {status_str} | Duration: {entry['execution_time_ms']}ms | Params: {sanitized_params}")
         return entry

@@ -285,30 +285,83 @@ function renderReportHTML(data) {
   `;
 }
 
-// Markdown to HTML Formatter
+// Full Markdown to HTML Formatter with Table, Blockquote & Heading Support
 function parseMarkdownToHTML(md) {
   if (!md) return '';
   let html = md;
 
-  // Headers
+  // 1. Process Markdown Tables before paragraph splitting
+  html = html.replace(/((?:\|(?:[^\n\r]+)\|(?:\r?\n))+)/g, (match) => {
+    const lines = match.trim().split(/\r?\n/).filter(line => line.trim().startsWith('|'));
+    if (lines.length < 2) return match;
+
+    let tableHTML = '<div class="report-table-wrapper"><table class="report-table"><thead>';
+    let isHeaderParsed = false;
+    let tbodyHTML = '<tbody>';
+
+    lines.forEach((line) => {
+      // Skip separator line (e.g. |---|---|---|)
+      if (/^\|(?:\s*:?-+:?\s*\|)+$/.test(line.trim())) {
+        return;
+      }
+
+      const cells = line.split('|').slice(1, -1).map(c => c.trim());
+      if (!isHeaderParsed) {
+        tableHTML += '<tr>' + cells.map(c => `<th>${parseInlineMarkdown(c)}</th>`).join('') + '</tr></thead>';
+        isHeaderParsed = true;
+      } else {
+        tbodyHTML += '<tr>' + cells.map(c => `<td>${parseInlineMarkdown(c)}</td>`).join('') + '</tr>';
+      }
+    });
+
+    tbodyHTML += '</tbody>';
+    tableHTML += tbodyHTML + '</table></div>';
+    return tableHTML;
+  });
+
+  // 2. Horizontal Rules
+  html = html.replace(/^[\-\*\_]{3,}$/gim, '<hr class="report-divider" />');
+
+  // 3. Blockquotes
+  html = html.replace(/^>\s*(.*$)/gim, '<blockquote class="report-quote">$1</blockquote>');
+
+  // 4. Headings
+  html = html.replace(/^#### (.*$)/gim, '<h4>$1</h4>');
   html = html.replace(/^### (.*$)/gim, '<h3>$1</h3>');
   html = html.replace(/^## (.*$)/gim, '<h2>$1</h2>');
+  html = html.replace(/^# (.*$)/gim, '<h1>$1</h1>');
 
-  // Bold & Italic
-  html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-  html = html.replace(/\*(.*?)\*/g, '<em>$1</em>');
+  // 5. Lists (Unordered & Ordered)
+  html = html.replace(/^[\*\-] (.*$)/gim, '<li>$1</li>');
+  html = html.replace(/^\d+\.\s*(.*$)/gim, '<li class="ordered-item">$1</li>');
 
-  // Bullet Lists
-  html = html.replace(/^\- (.*$)/gim, '<li>$1</li>');
+  // Group list items
   html = html.replace(/(<li>.*<\/li>)/gim, '<ul>$1</ul>');
   html = html.replace(/<\/ul>\s*<ul>/g, '');
 
-  // Paragraphs
-  const paragraphs = html.split(/\n\n+/);
-  return paragraphs.map(p => {
-    if (p.startsWith('<h') || p.startsWith('<ul')) return p;
-    return `<p>${p}</p>`;
+  // 6. Inline Formatting (Bold, Italic, Code, Links)
+  html = parseInlineMarkdown(html);
+
+  // 7. Paragraph Wrappers
+  const blocks = html.split(/\n\n+/);
+  return blocks.map(b => {
+    const trimmed = b.trim();
+    if (!trimmed) return '';
+    if (trimmed.startsWith('<h') || trimmed.startsWith('<ul') || trimmed.startsWith('<ol') || trimmed.startsWith('<div') || trimmed.startsWith('<blockquote') || trimmed.startsWith('<hr')) {
+      return trimmed;
+    }
+    return `<p>${trimmed}</p>`;
   }).join('');
+}
+
+function parseInlineMarkdown(text) {
+  if (!text) return '';
+  let str = text;
+  str = str.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+  str = str.replace(/\*(.*?)\*/g, '<em>$1</em>');
+  str = str.replace(/`([^`]+)`/g, '<code>$1</code>');
+  str = str.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener" class="report-link">$1</a>');
+  return str;
 }
 
 // Audit Log Fetching & UI Rendering

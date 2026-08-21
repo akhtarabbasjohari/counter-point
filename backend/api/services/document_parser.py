@@ -66,13 +66,12 @@ class DocumentParserService:
 
     @staticmethod
     def _parse_pdf(uploaded_file):
-        text_content = []
         file_bytes = uploaded_file.read()
-        page_count = 0
         
         # Try pdfplumber first
         try:
             import pdfplumber
+            text_content = []
             with pdfplumber.open(io.BytesIO(file_bytes)) as pdf:
                 page_count = len(pdf.pages)
                 for i, page in enumerate(pdf.pages):
@@ -87,6 +86,7 @@ class DocumentParserService:
         # Fallback to pypdf
         try:
             import pypdf
+            text_content = []
             reader = pypdf.PdfReader(io.BytesIO(file_bytes))
             page_count = len(reader.pages)
             for i, page in enumerate(reader.pages):
@@ -103,7 +103,7 @@ class DocumentParserService:
     @staticmethod
     def _parse_txt(uploaded_file):
         content = uploaded_file.read()
-        for encoding in ['utf-8', 'latin-1', 'cp1252']:
+        for encoding in ['utf-8', 'cp1252', 'latin-1']:
             try:
                 return content.decode(encoding), 1
             except (UnicodeDecodeError, AttributeError):
