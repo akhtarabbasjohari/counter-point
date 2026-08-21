@@ -11,12 +11,13 @@ This spec covers Phase 1 of the [CounterPoint Implementation Roadmap](../roadmap
   - Baseline health check API endpoint (`/api/health/`).
 - **Frontend Setup**:
   - Vite development workspace initialized under `frontend/`.
-  - Base design system setup in `index.css` using Vanilla CSS design tokens (typography, color palette, flex/grid layout rules).
+  - Base design system setup in `index.css` using Vanilla CSS design tokens (typography, color palette, responsive flex/grid layout rules for desktop, tablet, and mobile).
+  - Integration of **Vitest** for Vite-native unit and integration test validation (`npm run test`).
 - **Environment Configuration**:
   - Structured `.env.example` documenting runtime keys (`GROQ_API_KEY`, `SECRET_KEY`, `DEBUG`, `CORS_ALLOWED_ORIGINS`).
 
 ## 3. Key Decisions & Constraints
-- **Framework Choices**: Django 5.x + DRF for backend scalability and Python AI ecosystem access; Vite + Vanilla CSS for lightweight, fast frontend rendering without heavy CSS framework dependencies.
+- **Framework Choices**: Django 5.x + DRF for backend scalability and Python AI ecosystem access; Vite + Vanilla CSS for lightweight, fast frontend rendering without heavy CSS framework dependencies; Vitest for fast, Vite-native frontend test execution.
 - **Project Structure**:
   ```text
   counter-point/
