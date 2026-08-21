@@ -6,6 +6,7 @@ CounterPoint empowers product managers, market researchers, and strategists to c
 ## 2. Core Value Proposition
 - **Real-Time Competitive Intelligence**: Automatically gather live web data regarding competitor offerings, pricing models, product updates, and market activity.
 - **Internal Positioning Alignment**: Contrast competitor findings directly against uploaded strategy files (PDF/TXT) to identify positioning gaps, overlaps, and strategic advantages.
+- **Fully Responsive Web Interface**: Deliver a fluid, mobile-first responsive web design that adapts seamlessly across mobile devices, tablets, and desktop workstations without content shifting or loss of functionality.
 - **Continuous Session Memory**: Maintain context across multi-turn research conversations so follow-up queries refine and build upon previous insights without loss of state.
 - **Full Audit Trail**: Log every tool call (web search, document inspection, parsing action) with precise ISO timestamps for complete transparency and traceability.
 - **Multi-Hop Synthesis**: Execute complex reasoning that combines insights from internal strategy documents with fresh web research data.
@@ -19,4 +20,4 @@ CounterPoint empowers product managers, market researchers, and strategists to c
 - Fast response times for multi-hop queries leveraging Groq API.
 - 100% timestamped audit logging for every background tool execution.
 - High document parsing accuracy for uploaded PDF and TXT positioning files.
-- Frictionless, intuitive single-page interface for competitor analysis.
+- Frictionless, fully responsive single-page web interface optimized for mobile, tablet, and desktop viewports.
