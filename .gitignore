@@ -19,6 +19,9 @@ frontend/node_modules/
 dist/
 frontend/dist/
 build/
+.vite/
+frontend/.vite/
+
 
 # Environment & Logs
 .env
