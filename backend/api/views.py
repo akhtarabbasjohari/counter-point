@@ -21,24 +21,9 @@ logger = logging.getLogger(__name__)
 
 def get_session_id(request):
     """
-    Extract session key from request headers, JSON body parameter, or Django session cookie.
+    Extract session key from request headers, JSON body, Django session cookie, or generate fallback UUID.
     """
-    # 1. Custom Header
-    header_session_id = request.headers.get('X-Session-ID') or request.META.get('HTTP_X_SESSION_ID')
-    if header_session_id:
-        return header_session_id
-
-    # 2. JSON Body Parameter
-    if hasattr(request, 'data') and isinstance(request.data, dict) and request.data.get('session_id'):
-        return request.data.get('session_id')
-
-    # 3. Standard Django Session
-    if hasattr(request, 'session'):
-        if not request.session.session_key:
-            request.session.create()
-        return request.session.session_key
-
-    return SessionManager.get_or_create_session_id()
+    return SessionManager.get_or_create_session_id(request=request)
 
 
 class HealthCheckView(APIView):

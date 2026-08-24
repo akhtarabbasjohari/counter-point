@@ -20,11 +20,16 @@ class SessionManager:
     @classmethod
     def get_or_create_session_id(cls, request=None, header_session_id=None):
         """
-        Extract session_id from header (X-Session-ID), request.session, or generate a new UUID.
+        Extract session_id from header (X-Session-ID), request body, request.session, or generate a new UUID.
         """
         session_id = header_session_id
         if not session_id and request:
-            session_id = request.headers.get('X-Session-ID')
+            # 1. Custom Header
+            session_id = request.headers.get('X-Session-ID') or (getattr(request, 'META', {}).get('HTTP_X_SESSION_ID') if hasattr(request, 'META') else None)
+            # 2. JSON Body Parameter
+            if not session_id and hasattr(request, 'data') and isinstance(request.data, dict):
+                session_id = request.data.get('session_id')
+            # 3. Standard Django Session
             if not session_id and hasattr(request, 'session'):
                 if not request.session.session_key:
                     request.session.create()

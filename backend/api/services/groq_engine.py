@@ -47,7 +47,12 @@ class GroqReasoningEngine:
         model_used = None
 
         # Check Cache to prevent Groq Rate Limit (429) hits on identical queries
-        cache_key_str = f"synthesis_cache_{query}_{document_context.get('file_name', '') if document_context else ''}_{len(web_results.get('results', [])) if web_results else 0}"
+        doc_text = document_context.get('text', '') if document_context else ''
+        doc_file = document_context.get('file_name', '') if document_context else ''
+        doc_hash = hashlib.md5(f"{doc_file}:{doc_text}".encode('utf-8')).hexdigest() if document_context else 'no_doc'
+        web_count = len(web_results.get('results', [])) if web_results else 0
+
+        cache_key_str = f"synthesis_cache_{session_id}_{query}_{doc_hash}_{web_count}"
         cache_key = hashlib.md5(cache_key_str.encode('utf-8')).hexdigest()
         cached_response = cache.get(cache_key)
         if cached_response:

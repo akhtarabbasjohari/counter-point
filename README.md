@@ -186,6 +186,16 @@ counter-point/
 
 ---
 
+## 🔒 Security & Deployment Notice
+
+> **Note on Multi-Tenancy & Authentication**:
+> CounterPoint is designed as a single-tenant portfolio demonstration platform. API endpoints do not require authentication tokens, and session context is passed via client-supplied `X-Session-ID` headers or body parameters. For multi-tenant production deployments:
+> 1. Implement authentication middleware (JWT / OAuth2 / Django Session Auth) on API endpoints.
+> 2. Ensure `SECRET_KEY` and `DEBUG=False` are configured via environment variables.
+> 3. Use a persistent checkpointer (such as PostgreSQL Checkpointer `PostgresSaver`) for multi-worker WSGI/ASGI servers.
+
+---
+
 ## 📝 License
 
 This project is licensed under the MIT License.

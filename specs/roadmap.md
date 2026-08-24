@@ -44,11 +44,29 @@ This roadmap breaks down the implementation of CounterPoint into 5 small, increm
 - [x] Add Django unit/integration tests for multi-turn coreference resolution.
 
 ## Phase 7: Stateful Agent Memory Architecture & LangGraph Graph Engine
-- [ ] Install and configure `langgraph` and `langchain-core` Python dependencies.
-- [ ] Build `AgentMemoryState` graph state class maintaining dynamic context (`messages`, `active_entities`, `document_context`, `resolved_topic`).
-- [ ] Construct multi-node `StateGraph` execution pipeline (`QueryAnalysis` -> `StateMemoryLookup` -> `WebResearch` -> `StrategySynthesis`) with `MemorySaver` checkpointer.
-- [ ] Integrate `LangGraphEngine` into Django REST API synthesis endpoints replacing rigid static rule-based query handling.
-- [ ] Write Django backend unit and integration tests verifying graph state persistence and multi-turn state transitions across session turns.
+- [x] Install and configure `langgraph` and `langchain-core` Python dependencies.
+- [x] Build `AgentMemoryState` graph state class maintaining dynamic context (`messages`, `active_entities`, `document_context`, `resolved_topic`).
+- [x] Construct multi-node `StateGraph` execution pipeline (`QueryAnalysis` -> `StateMemoryLookup` -> `WebResearch` -> `StrategySynthesis`) with `MemorySaver` checkpointer.
+- [x] Integrate `LangGraphEngine` into Django REST API synthesis endpoints replacing rigid static rule-based query handling.
+- [x] Write Django backend unit and integration tests verifying graph state persistence and multi-turn state transitions across session turns.
+
+## Phase 8: Security Hardening, Data Integrity & Architectural Refinement
+- [x] **Security Hardening**:
+  - Enforce mandatory `SECRET_KEY` configuration in production and set `DEBUG=False` by default in `settings.py` and `.env.example`.
+  - Restrict default `ALLOWED_HOSTS` and `CORS_ALLOW_ALL_ORIGINS` setting to explicit environment origins.
+  - Fix Stored XSS vulnerability in frontend markdown renderer (`parseMarkdownToHTML`) by HTML-escaping raw text content before applying markdown transformations and sanitizing link URLs.
+  - Document single-tenant scope and lack of default multi-tenant auth in `README.md`.
+- [x] **Data Integrity & Search Correctness**:
+  - Remove fabricated synthetic search fallback (`_fallback_search`) in `WebSearchService` to ensure all research findings reflect authentic live web signals.
+- [x] **Cache & Memory Leak Isolation**:
+  - Incorporate `session_id` and document text hash into `GroqReasoningEngine` synthesis cache key to prevent cross-session context leaks.
+  - Fix `AuditLogger` memory leak in `clear_logs()` by deleting session keys (`pop`) and setting a maximum session cap.
+  - Document `MemorySaver` single-process checkpointer scope in `LangGraphEngine`.
+- [x] **Audit & Routing Optimization**:
+  - Consolidate duplicate audit log calls in `LangGraphEngine` (`langgraph_state_lookup` and `langgraph_execution_complete`).
+  - Consolidate session ID resolution logic inside `SessionManager.get_or_create_session_id`.
+  - Expand entity dictionary and add dynamic proper-noun extraction fallback in `QueryRewriter`.
+  - Streamline API URL routing to use canonical trailing slashes.
 
 
 

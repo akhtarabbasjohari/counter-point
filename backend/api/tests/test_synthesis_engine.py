@@ -50,6 +50,6 @@ class MultiHopSynthesisEngineTests(TestCase):
 
         logs = AuditLogger.get_logs(self.session_id)
         tool_names = [l["tool_name"] for l in logs]
-        self.assertIn("session_memory_lookup", tool_names)
+        self.assertIn("langgraph_state_lookup", tool_names)
         self.assertIn("groq_reasoning_synthesis", tool_names)
-        self.assertIn("multihop_synthesis_complete", tool_names)
+        self.assertIn("langgraph_execution_complete", tool_names)

@@ -24,8 +24,7 @@ class AuditLogger:
     @staticmethod
     def clear_logs(session_id="global"):
         with LOG_LOCK:
-            if session_id in SESSION_AUDIT_LOGS:
-                SESSION_AUDIT_LOGS[session_id] = []
+            SESSION_AUDIT_LOGS.pop(session_id, None)
 
     @staticmethod
     def log_tool_execution(tool_name, input_params, execution_time_ms, status="SUCCESS", result_summary="", error_message=None, session_id="global"):
@@ -54,6 +53,12 @@ class AuditLogger:
         }
 
         with LOG_LOCK:
+            # Enforce max 500 session keys in process memory to prevent unbounded memory leaks
+            if len(SESSION_AUDIT_LOGS) > 500 and session_id not in SESSION_AUDIT_LOGS:
+                keys_to_remove = list(SESSION_AUDIT_LOGS.keys())[:100]
+                for k in keys_to_remove:
+                    SESSION_AUDIT_LOGS.pop(k, None)
+
             if session_id not in SESSION_AUDIT_LOGS:
                 SESSION_AUDIT_LOGS[session_id] = []
 
@@ -65,42 +70,3 @@ class AuditLogger:
 
         logger.info(f"Tool: {tool_name} | Status: {status_str} | Duration: {entry['execution_time_ms']}ms | Params: {sanitized_params}")
         return entry
-
-
-class audit_tool:
-    """Decorator / Context manager to measure execution time and record audit log."""
-    def __init__(self, tool_name, get_session_id=None):
-        self.tool_name = tool_name
-        self.get_session_id = get_session_id
-
-    def __call__(self, func):
-        def wrapper(*args, **kwargs):
-            start_time = time.time()
-            session_id = kwargs.get('session_id', 'global')
-            status = "success"
-            result_summary = ""
-            try:
-                result = func(*args, **kwargs)
-                if isinstance(result, dict) and "summary" in result:
-                    result_summary = result["summary"]
-                elif isinstance(result, str):
-                    result_summary = result[:200]
-                else:
-                    result_summary = str(result)[:200]
-                return result
-            except Exception as e:
-                status = "error"
-                result_summary = str(e)
-                raise e
-            finally:
-                elapsed_ms = (time.time() - start_time) * 1000
-                input_params = {k: v for k, v in kwargs.items() if k != 'session_id'}
-                AuditLogger.log_tool_execution(
-                    tool_name=self.tool_name,
-                    input_params=input_params,
-                    execution_time_ms=elapsed_ms,
-                    status=status,
-                    result_summary=result_summary,
-                    session_id=session_id
-                )
-        return wrapper
