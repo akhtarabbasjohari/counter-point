@@ -85,19 +85,11 @@ class LangGraphEngine:
         duration = (time.time() - start) * 1000
 
         AuditLogger.log_tool_execution(
-            tool_name="session_memory_lookup",
-            input_params={"session_id": session_id},
-            execution_time_ms=duration,
-            status="success",
-            result_summary=f"Retrieved doc: {doc_context.get('file_name') if doc_context else 'None'}, history: {len(history)} items",
-            session_id=session_id
-        )
-        AuditLogger.log_tool_execution(
             tool_name="langgraph_state_lookup",
-            input_params={"has_doc": bool(doc_context)},
+            input_params={"session_id": session_id, "has_doc": bool(doc_context), "history_count": len(history)},
             execution_time_ms=duration,
             status="success",
-            result_summary="Graph memory state checkpoint synced",
+            result_summary=f"Graph memory state checkpoint synced (doc: {doc_context.get('file_name') if doc_context else 'None'})",
             session_id=session_id
         )
         return {
@@ -190,14 +182,6 @@ class LangGraphEngine:
 
         total_duration = (time.time() - start_time) * 1000
 
-        AuditLogger.log_tool_execution(
-            tool_name="multihop_synthesis_complete",
-            input_params={"session_id": session_id, "raw_query": query},
-            execution_time_ms=total_duration,
-            status="success",
-            result_summary=f"LangGraph stateful memory pipeline finished in {round(total_duration, 2)}ms",
-            session_id=session_id
-        )
         AuditLogger.log_tool_execution(
             tool_name="langgraph_execution_complete",
             input_params={"session_id": session_id, "raw_query": query},

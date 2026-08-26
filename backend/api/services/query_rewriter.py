@@ -9,7 +9,10 @@ logger = logging.getLogger(__name__)
 
 KNOWN_ENTITIES = [
     'Salesforce', 'HubSpot', 'Notion', 'ClickUp', 'Linear', 
-    'Asana', 'Monday.com', 'Oracle', 'Microsoft Dynamics', 'SAP'
+    'Asana', 'Monday.com', 'Oracle', 'Microsoft Dynamics', 'SAP',
+    'Datadog', 'Snowflake', 'Stripe', 'Figma', 'Slack', 'Zoom',
+    'Jira', 'Confluence', 'Trello', 'Zendesk', 'Intercom', 'Databricks',
+    'Workday', 'ServiceNow', 'GitHub', 'GitLab', 'Postman', 'Sentry'
 ]
 
 PRONOUN_PATTERNS = [
@@ -68,11 +71,26 @@ class QueryRewriter:
 
     @staticmethod
     def _extract_recent_entity(conversation_history):
+        ignored_terms = {
+            'CounterPoint', 'Executive', 'Summary', 'Live', 'Market', 'Intelligence',
+            'Internal', 'Positioning', 'Alignment', 'Strategic', 'Recommendations',
+            'Section', 'File', 'Document', 'User', 'Assistant', 'Query', 'Topic',
+            'Pricing', 'Features', 'Offerings', 'Compare', 'What', 'How', 'Does', 'Which',
+            'Overview', 'Analysis', 'Report', 'SaaS', 'API', 'SMBs', 'Tiered',
+            'You', 'They', 'Them', 'Their', 'These', 'Those', 'This', 'That', 'Your', 'Our', 'We'
+        }
         for msg in reversed(conversation_history):
             content = msg.get('content', '')
+            # 1. Check known entities list
             for entity in KNOWN_ENTITIES:
                 if re.search(r'\b' + re.escape(entity) + r'\b', content, re.IGNORECASE):
                     return entity
+
+            # 2. Dynamic proper-noun extraction fallback for entities outside KNOWN_ENTITIES
+            candidates = re.findall(r'\b[A-Z][a-zA-Z0-9\.\-]{2,}\b', content)
+            for candidate in candidates:
+                if candidate not in ignored_terms and len(candidate) > 2:
+                    return candidate
         return None
 
     @staticmethod

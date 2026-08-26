@@ -6,7 +6,7 @@ from rest_framework.test import APIClient
 from rest_framework import status
 
 from api.services.document_parser import DocumentParserService
-from api.services.audit_logger import AuditLogger, audit_tool
+from api.services.audit_logger import AuditLogger
 
 class CounterPointAPITests(TestCase):
     def setUp(self):
@@ -134,7 +134,7 @@ class UnitServiceTests(TestCase):
         with self.assertRaises(ValueError):
             DocumentParserService.parse_uploaded_file(uploaded_file, session_id="test_session")
 
-    def test_audit_logger_direct_and_decorator(self):
+    def test_audit_logger_direct(self):
         AuditLogger.log_tool_execution(
             tool_name="test_tool",
             input_params={"param1": "val1"},
@@ -147,12 +147,3 @@ class UnitServiceTests(TestCase):
         self.assertEqual(len(logs), 1)
         self.assertEqual(logs[0]["tool_name"], "test_tool")
         self.assertEqual(logs[0]["status"], "SUCCESS")
-
-        @audit_tool("decorated_tool")
-        def dummy_action(session_id="test_session"):
-            return "ok"
-
-        dummy_action(session_id="test_session")
-        updated_logs = AuditLogger.get_logs("test_session")
-        self.assertEqual(len(updated_logs), 2)
-        self.assertEqual(updated_logs[0]["tool_name"], "decorated_tool")

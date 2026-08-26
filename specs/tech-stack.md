@@ -19,22 +19,19 @@ CounterPoint is built using a robust Python / Django REST Framework (DRF) backen
 - **Client Logic**: Vanilla JS / TypeScript for sending API requests, handling doc uploads, rendering findings, and displaying live audit logs
 - **Testing & Validation**: Vitest for Vite-native unit and integration test validation (`npm run test`)
 
+### Security & Infrastructure Hardening
+- **Environment Security**: Strict `SECRET_KEY` validation (prevents starting server in production with insecure fallback keys), `DEBUG=False` by default, and explicit `ALLOWED_HOSTS` configuration
+- **Cross-Site Scripting (XSS) Protection**: Mandatory HTML escaping of raw markdown content before rendering DOM nodes in `parseMarkdownToHTML`, accompanied by protocol sanitization for hyperlink URLs
+- **Single-Tenant Scope**: Transparent session context handling (`X-Session-ID`) with documented recommendations for multi-tenant gateway authentication
+
 ### AI & Reasoning Engine
 - **LLM Provider**: `groq` Python SDK (High-throughput inference for multi-hop reasoning, prompt synthesis, and tool orchestration)
 - **Stateful Agent Memory Engine**: `langgraph` (`StateGraph` + `MemorySaver`) managing dynamic multi-turn conversation graph state, active entities, intent tracking, and research node execution without relying on rigid static rules
-- **Coreference Resolution Engine**: `QueryRewriter` service (`backend/api/services/query_rewriter.py`) utilizing session memory context to resolve ambiguous multi-turn follow-up queries (e.g. *"How does our strategy compare to that?"* -> *"Compare CounterPoint strategy with Salesforce revenue & positioning"*) before web search execution
-- **Web Search Module**: Custom Python search integration using web search APIs (e.g., Tavily / Serper / DuckDuckGo) for fetching live competitor offerings, pricing, and news updates
+- **Coreference Resolution Engine**: `QueryRewriter` service (`backend/api/services/query_rewriter.py`) utilizing session memory context and dynamic proper-noun extraction to resolve ambiguous multi-turn follow-up queries before web search execution
+- **Web Search Module**: Authentic DuckDuckGo (`ddgs`) live search integration for real-time market data without synthetic search hallucination
 
-
-### Document Processing
-- **PDF Parser**: `pdfplumber` (or `pypdf`) for extracting structured text from uploaded PDF positioning documents
-- **TXT Reader**: Native Python file handling and UTF-8 stream decoding
-
-### Logging & Audit System
-- **Logger**: Custom Python timestamped JSON audit log module (leveraging Python's standard `logging` library or custom middleware)
-- **Log Fields**: `timestamp` (ISO 8601 string), `tool_name` (`web_search`, `read_positioning_doc`), `input_params`, `execution_time_ms`, `status`
-
-### State & Session Management
-- **Stateful Graph Memory**: LangGraph `MemorySaver` checkpointer persisting stateful graph snapshots per session, tracking conversation history, extracted entities, active document context, and intent state across arbitrary free-form user queries
-- **Session Memory**: Django Session / Cache framework (`django.core.cache`) or in-memory session state tracking active document context, previous search results, and chat history per user session
+### State, Caching & Session Management
+- **Stateful Graph Memory**: LangGraph `MemorySaver` checkpointer persisting stateful graph snapshots per session (single-process development scope)
+- **Session-Isolated Cache**: Session-specific, document-content-hashed MD5 synthesis cache key in `GroqReasoningEngine` to eliminate cross-session data leaks
+- **Session Audit Logger**: Thread-safe in-memory audit log manager (`AuditLogger`) with automatic session cleanup and maximum session caps to prevent memory leaks
 

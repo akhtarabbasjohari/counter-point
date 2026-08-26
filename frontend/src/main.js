@@ -285,10 +285,21 @@ function renderReportHTML(data) {
   `;
 }
 
-// Full Markdown to HTML Formatter with Table, Blockquote & Heading Support
+// Sanitize URLs for links to prevent javascript: or unsafe protocol XSS
+function sanitizeUrl(url) {
+  if (!url) return '#';
+  const clean = url.trim();
+  if (/^(https?:\/\/|\/|#)/i.test(clean)) {
+    return escapeHtml(clean);
+  }
+  return '#';
+}
+
+// Full Markdown to HTML Formatter with Table, Blockquote & Heading Support (XSS Safe)
 function parseMarkdownToHTML(md) {
   if (!md) return '';
-  let html = md;
+  // 0. HTML-escape raw text content before applying markdown transformations
+  let html = escapeHtml(md);
 
   // 1. Process Markdown Tables before paragraph splitting
   html = html.replace(/((?:\|(?:[^\n\r]+)\|(?:\r?\n))+)/g, (match) => {
@@ -323,7 +334,7 @@ function parseMarkdownToHTML(md) {
   html = html.replace(/^[\-\*\_]{3,}$/gim, '<hr class="report-divider" />');
 
   // 3. Blockquotes
-  html = html.replace(/^>\s*(.*$)/gim, '<blockquote class="report-quote">$1</blockquote>');
+  html = html.replace(/^&gt;\s*(.*$)/gim, '<blockquote class="report-quote">$1</blockquote>');
 
   // 4. Headings
   html = html.replace(/^#### (.*$)/gim, '<h4>$1</h4>');
@@ -360,7 +371,9 @@ function parseInlineMarkdown(text) {
   str = str.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
   str = str.replace(/\*(.*?)\*/g, '<em>$1</em>');
   str = str.replace(/`([^`]+)`/g, '<code>$1</code>');
-  str = str.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener" class="report-link">$1</a>');
+  str = str.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (match, linkText, linkUrl) => {
+    return `<a href="${sanitizeUrl(linkUrl)}" target="_blank" rel="noopener" class="report-link">${linkText}</a>`;
+  });
   return str;
 }
 
