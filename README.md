@@ -186,7 +186,7 @@ counter-point/
 
 ---
 
-## 🔒 Security & Deployment Notice
+##  Security & Deployment Notice
 
 > **Note on Multi-Tenancy & Authentication**:
 > CounterPoint is designed as a single-tenant portfolio demonstration platform. API endpoints do not require authentication tokens, and session context is passed via client-supplied `X-Session-ID` headers or body parameters. For multi-tenant production deployments:
@@ -196,7 +196,7 @@ counter-point/
 
 ---
 
-## 📝 License
+##  License
 ## License
 
 This project is licensed under the MIT License.
