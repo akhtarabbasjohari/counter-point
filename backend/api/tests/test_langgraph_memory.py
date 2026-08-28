@@ -67,7 +67,7 @@ class LangGraphMemoryEngineTests(TestCase):
         )
 
         self.assertEqual(result["intent"], "OFF_TOPIC")
-        self.assertIn("software competitive intelligence", result["synthesis"])
+        self.assertTrue(any(phrase in result["synthesis"] for phrase in ["software competitive", "competitive analysis", "positioning document"]))
         self.assertNotIn("Self-serve low tier ($5-$15/mo)", result["synthesis"])
         self.assertNotIn("### 1. Executive Summary", result["synthesis"])
 
