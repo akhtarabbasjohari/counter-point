@@ -27,6 +27,8 @@ CounterPoint is built using a robust Python / Django REST Framework (DRF) backen
 ### AI & Reasoning Engine
 - **LLM Provider**: `groq` Python SDK (High-throughput inference for multi-hop reasoning, prompt synthesis, and tool orchestration)
 - **Stateful Agent Memory Engine**: `langgraph` (`StateGraph` + `MemorySaver`) managing dynamic multi-turn conversation graph state, active entities, intent tracking, and research node execution without relying on rigid static rules
+- **Intent Classification & Adaptive Routing**: Dynamic intent classification node inside LangGraph categorizing inputs into `GREETING`, `OFF_TOPIC`, `GENERAL_QA`, and `COMPETITOR_RESEARCH` to prevent unnecessary web search calls and suppress rigid competitor table structures for conversational inputs
+- **Anti-Hallucination Guardrail Architecture**: Zero-hallucination policy eliminating hardcoded synthetic pricing grids (`$5-$15/mo`) and forcing explicit fallback statements ("No pricing data found in sources") whenever live search signals or LLM inference yield incomplete market information
 - **Coreference Resolution Engine**: `QueryRewriter` service (`backend/api/services/query_rewriter.py`) utilizing session memory context and dynamic proper-noun extraction to resolve ambiguous multi-turn follow-up queries before web search execution
 - **Web Search Module**: Authentic DuckDuckGo (`ddgs`) live search integration for real-time market data without synthetic search hallucination
 

@@ -66,7 +66,19 @@ This roadmap breaks down the implementation of CounterPoint into 5 small, increm
   - Consolidate duplicate audit log calls in `LangGraphEngine` (`langgraph_state_lookup` and `langgraph_execution_complete`).
   - Consolidate session ID resolution logic inside `SessionManager.get_or_create_session_id`.
   - Expand entity dictionary and add dynamic proper-noun extraction fallback in `QueryRewriter`.
-  - Streamline API URL routing to use canonical trailing slashes.
+  - [x] Streamline API URL routing to use canonical trailing slashes.
 
-
-
+## Phase 9: Dynamic Query Intent Classification, Anti-Hallucination Guardrails & Adaptive Response Structure
+- [ ] **Intent Classification Node in LangGraph**:
+  - Classify incoming queries into distinct intents: `GREETING`, `OFF_TOPIC`, `GENERAL_QA`, and `COMPETITOR_RESEARCH`.
+  - Dynamically route conversational / greeting inputs (`hi`, `hello`, `who are you`, generic banter) to direct conversational handling without launching unnecessary web searches or forcing structured competitive analysis tables.
+- [ ] **Adaptive Synthesis Prompting**:
+  - Remove mandatory 4-section matrix structure for non-competitor queries.
+  - Tailor response structure according to query intent: conversational responses for greetings/Q&A, and full competitive intelligence matrices only for authentic competitive research topics.
+- [ ] **Zero-Hallucination Pricing & Feature Guardrails**:
+  - Eliminate hardcoded synthetic pricing tables (`$5-$15/mo`) and synthetic feature comparisons from offline fallback synthesis.
+  - Explicitly state when pricing or market data is absent or unverified in live research results rather than inventing numbers.
+- [ ] **LangGraph & Rule Engine Alignment**:
+  - Update `LangGraphEngine` and `GroqReasoningEngine` to handle missing/empty API keys or web search results truthfully without hallucinating competitor metrics.
+- [ ] **Unit & Integration Verification**:
+  - Add backend unit tests verifying that greetings, off-topic prompts, missing search results, and competitive research queries produce intent-appropriate, hallucination-free outputs.
