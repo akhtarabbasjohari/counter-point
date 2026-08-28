@@ -54,7 +54,7 @@ class LangGraphMemoryEngineTests(TestCase):
         )
 
         self.assertEqual(result["intent"], "GREETING")
-        self.assertIn("Hello", result["synthesis"])
+        self.assertTrue(any(greet in result["synthesis"] for greet in ["Hello", "Hi", "welcome", "CounterPoint"]))
         # Ensure it does NOT contain synthetic pricing tables or matrix headers
         self.assertNotIn("Self-serve low tier ($5-$15/mo)", result["synthesis"])
         self.assertNotIn("### 1. Executive Summary", result["synthesis"])

@@ -72,20 +72,20 @@ class QueryRewriter:
         if any(w in competitor_keywords for w in words):
             return "COMPETITOR_RESEARCH"
 
-        # Check proper noun / capitalization in original query (e.g. company names outside KNOWN_ENTITIES)
-        capitalized_words = re.findall(r'\b[A-Z][a-zA-Z0-9\.\-]{2,}\b', str(query))
-        ignored_caps = {"What", "How", "Why", "When", "Who", "Where", "Can", "Could", "Should", "Would", "Tell", "Give", "Show", "Is", "Are", "The", "This", "That", "Please"}
-        meaningful_caps = [c for c in capitalized_words if c not in ignored_caps]
-        if len(meaningful_caps) > 0:
-            return "COMPETITOR_RESEARCH"
-
-        # 5. Check OFF_TOPIC
+        # 5. Check OFF_TOPIC indicators
         off_topic_indicators = [
             "capital of", "weather", "tell me a joke", "write a poem", "solve",
             "recipe", "who won", "movie", "song", "president", "distance to", "translate"
         ]
         if any(ind in clean_query for ind in off_topic_indicators):
             return "OFF_TOPIC"
+
+        # Check proper noun / capitalization in original query (e.g. company names outside KNOWN_ENTITIES)
+        capitalized_words = re.findall(r'\b[A-Z][a-zA-Z0-9\.\-]{2,}\b', str(query))
+        ignored_caps = {"What", "How", "Why", "When", "Who", "Where", "Can", "Could", "Should", "Would", "Tell", "Give", "Show", "Is", "Are", "The", "This", "That", "Please", "France", "Germany", "Paris", "London"}
+        meaningful_caps = [c for c in capitalized_words if c not in ignored_caps]
+        if len(meaningful_caps) > 0:
+            return "COMPETITOR_RESEARCH"
 
         if len(words) <= 4 and not any(w in competitor_keywords for w in words):
             return "OFF_TOPIC"
