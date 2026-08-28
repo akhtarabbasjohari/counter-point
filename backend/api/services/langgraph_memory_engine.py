@@ -16,6 +16,7 @@ class AgentMemoryState(TypedDict):
     session_id: str
     raw_query: str
     resolved_query: str
+    intent: str
     active_entities: List[str]
     messages: List[Dict[str, Any]]
     document_context: Optional[Dict[str, Any]]
@@ -54,6 +55,7 @@ class LangGraphEngine:
         raw_query = state.get("raw_query", "")
         history = state.get("messages", [])
 
+        intent = QueryRewriter.classify_intent(raw_query)
         resolved_query = QueryRewriter.resolve_query(raw_query, conversation_history=history, session_id=session_id)
 
         extracted_entity = QueryRewriter._extract_recent_entity(history) if history else None
@@ -64,14 +66,15 @@ class LangGraphEngine:
         duration = (time.time() - start) * 1000
         AuditLogger.log_tool_execution(
             tool_name="langgraph_query_analysis",
-            input_params={"raw_query": raw_query, "active_entities": active_entities},
+            input_params={"raw_query": raw_query, "intent": intent, "active_entities": active_entities},
             execution_time_ms=duration,
             status="success",
-            result_summary=f"Analyzed query into resolved topic: '{resolved_query}'",
+            result_summary=f"Analyzed query into intent '{intent}', resolved topic: '{resolved_query}'",
             session_id=session_id
         )
 
         return {
+            "intent": intent,
             "resolved_query": resolved_query,
             "active_entities": active_entities
         }
@@ -101,10 +104,13 @@ class LangGraphEngine:
     def _web_research_node(state: AgentMemoryState) -> Dict[str, Any]:
         start = time.time()
         session_id = state.get("session_id", "global")
-        execute_web = state.get("execute_web_search", True)
+        intent = state.get("intent", "COMPETITOR_RESEARCH")
+        
+        # Only execute web search if intent is COMPETITOR_RESEARCH
+        should_search = state.get("execute_web_search", True) and (intent == "COMPETITOR_RESEARCH")
         web_results = None
 
-        if execute_web:
+        if should_search:
             search_topic = state.get("resolved_query", state.get("raw_query"))
             web_results = WebSearchService.search_competitor(query=search_topic, max_results=5, session_id=session_id)
 
@@ -112,10 +118,10 @@ class LangGraphEngine:
 
         AuditLogger.log_tool_execution(
             tool_name="langgraph_web_research",
-            input_params={"execute_web_search": execute_web},
+            input_params={"execute_web_search": should_search, "intent": intent},
             execution_time_ms=duration,
             status="success",
-            result_summary=f"Retrieved {len(web_results.get('results', [])) if web_results else 0} web sources",
+            result_summary=f"Retrieved {len(web_results.get('results', [])) if web_results else 0} web sources (search executed: {should_search})",
             session_id=session_id
         )
         return {"web_research_results": web_results}
@@ -125,6 +131,7 @@ class LangGraphEngine:
         start = time.time()
         session_id = state.get("session_id", "global")
         query = state.get("resolved_query", state.get("raw_query"))
+        intent = state.get("intent", "COMPETITOR_RESEARCH")
         doc_context = state.get("document_context")
         web_results = state.get("web_research_results")
         history = state.get("messages", [])
@@ -134,16 +141,17 @@ class LangGraphEngine:
             document_context=doc_context,
             web_results=web_results,
             conversation_history=history,
-            session_id=session_id
+            session_id=session_id,
+            intent=intent
         )
 
         duration = (time.time() - start) * 1000
         AuditLogger.log_tool_execution(
             tool_name="langgraph_synthesis",
-            input_params={"model": synthesis_response["model"]},
+            input_params={"model": synthesis_response["model"], "intent": intent},
             execution_time_ms=duration,
             status="success",
-            result_summary=f"Synthesized counterpoint using {synthesis_response['model']}",
+            result_summary=f"Synthesized response using {synthesis_response['model']} [Intent: {intent}]",
             session_id=session_id
         )
 
@@ -159,11 +167,13 @@ class LangGraphEngine:
 
         document_context = SessionManager.get_active_document(session_id)
         conversation_history = SessionManager.get_conversation_history(session_id)
+        intent = QueryRewriter.classify_intent(query)
 
         initial_state: AgentMemoryState = {
             "session_id": session_id,
             "raw_query": query,
             "resolved_query": query,
+            "intent": intent,
             "active_entities": [],
             "messages": conversation_history,
             "document_context": document_context,
@@ -184,15 +194,16 @@ class LangGraphEngine:
 
         AuditLogger.log_tool_execution(
             tool_name="langgraph_execution_complete",
-            input_params={"session_id": session_id, "raw_query": query},
+            input_params={"session_id": session_id, "raw_query": query, "intent": final_state.get("intent")},
             execution_time_ms=total_duration,
             status="success",
-            result_summary=f"LangGraph stateful memory pipeline finished in {round(total_duration, 2)}ms",
+            result_summary=f"LangGraph stateful memory pipeline finished in {round(total_duration, 2)}ms [Intent: {final_state.get('intent')}]",
             session_id=session_id
         )
 
         return {
             "query": query,
+            "intent": final_state.get("intent", intent),
             "resolved_query": final_state["resolved_query"],
             "synthesis": final_state["final_synthesis"],
             "model_used": final_state["model_used"],

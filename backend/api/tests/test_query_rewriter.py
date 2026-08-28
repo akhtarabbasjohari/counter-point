@@ -42,3 +42,25 @@ class QueryRewriterTests(TestCase):
         logs = AuditLogger.get_logs(self.session_id)
         tool_names = [l["tool_name"] for l in logs]
         self.assertTrue(any(t in tool_names for t in ["langgraph_query_analysis", "query_coreference_resolution"]))
+
+    def test_classify_intent_greetings(self):
+        self.assertEqual(QueryRewriter.classify_intent("hi"), "GREETING")
+        self.assertEqual(QueryRewriter.classify_intent("hello there!"), "GREETING")
+        self.assertEqual(QueryRewriter.classify_intent("Good morning"), "GREETING")
+        self.assertEqual(QueryRewriter.classify_intent("thanks"), "GREETING")
+
+    def test_classify_intent_general_qa(self):
+        self.assertEqual(QueryRewriter.classify_intent("what can you do?"), "GENERAL_QA")
+        self.assertEqual(QueryRewriter.classify_intent("who are you"), "GENERAL_QA")
+        self.assertEqual(QueryRewriter.classify_intent("how to use counterpoint"), "GENERAL_QA")
+
+    def test_classify_intent_off_topic(self):
+        self.assertEqual(QueryRewriter.classify_intent("what is the capital of France?"), "OFF_TOPIC")
+        self.assertEqual(QueryRewriter.classify_intent("tell me a joke"), "OFF_TOPIC")
+        self.assertEqual(QueryRewriter.classify_intent("solve 2+2"), "OFF_TOPIC")
+
+    def test_classify_intent_competitor_research(self):
+        self.assertEqual(QueryRewriter.classify_intent("Notion vs ClickUp pricing"), "COMPETITOR_RESEARCH")
+        self.assertEqual(QueryRewriter.classify_intent("Salesforce features"), "COMPETITOR_RESEARCH")
+        self.assertEqual(QueryRewriter.classify_intent("analyze positioning strategy document"), "COMPETITOR_RESEARCH")
+
