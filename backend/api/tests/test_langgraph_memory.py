@@ -45,3 +45,40 @@ class LangGraphMemoryEngineTests(TestCase):
 
         history = SessionManager.get_conversation_history(self.session_id)
         self.assertEqual(len(history), 4) # 2 user + 2 assistant messages
+
+    def test_greeting_intent_does_not_hallucinate_matrices(self):
+        result = LangGraphEngine.execute_graph_synthesis(
+            query="hi",
+            session_id=self.session_id,
+            execute_web_search=True
+        )
+
+        self.assertEqual(result["intent"], "GREETING")
+        self.assertTrue(any(greet in result["synthesis"] for greet in ["Hello", "Hi", "welcome", "CounterPoint"]))
+        # Ensure it does NOT contain synthetic pricing tables or matrix headers
+        self.assertNotIn("Self-serve low tier ($5-$15/mo)", result["synthesis"])
+        self.assertNotIn("### 1. Executive Summary", result["synthesis"])
+
+    def test_off_topic_intent_does_not_hallucinate_pricing(self):
+        result = LangGraphEngine.execute_graph_synthesis(
+            query="what is the capital of France?",
+            session_id=self.session_id,
+            execute_web_search=True
+        )
+
+        self.assertEqual(result["intent"], "OFF_TOPIC")
+        self.assertTrue(any(phrase in result["synthesis"] for phrase in ["software competitive", "competitive analysis", "positioning document"]))
+        self.assertNotIn("Self-serve low tier ($5-$15/mo)", result["synthesis"])
+        self.assertNotIn("### 1. Executive Summary", result["synthesis"])
+
+    def test_competitor_research_zero_hallucination_fallback(self):
+        result = LangGraphEngine.execute_graph_synthesis(
+            query="Salesforce enterprise tier pricing",
+            session_id=self.session_id,
+            execute_web_search=False
+        )
+
+        self.assertEqual(result["intent"], "COMPETITOR_RESEARCH")
+        self.assertNotIn("Self-serve low tier ($5-$15/mo)", result["synthesis"])
+        self.assertIn("No verified external pricing data found", result["synthesis"])
+

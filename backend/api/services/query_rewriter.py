@@ -22,6 +22,77 @@ PRONOUN_PATTERNS = [
 class QueryRewriter:
 
     @staticmethod
+    def classify_intent(query):
+        """
+        Classifies incoming query intent into one of:
+        - GREETING: Greetings, pleasantries, single-word hellos/thanks/goodbyes.
+        - GENERAL_QA: Questions asking about CounterPoint's identity, capabilities, or usage.
+        - OFF_TOPIC: Questions completely unrelated to software, business software, or competitive strategy.
+        - COMPETITOR_RESEARCH: Authentic competitive intelligence, pricing, positioning, or document contrast requests.
+        """
+        if not query or not str(query).strip():
+            return "GREETING"
+
+        clean_query = str(query).strip().lower()
+        words = clean_query.split()
+
+        # 1. Check GREETING
+        greeting_pattern = r'^(hi|hello|hey|greetings|howdy|sup|good\s+(morning|afternoon|evening)|thank\s+you|thanks|bye|goodbye|hi\s+there|hello\s+there)[\s!\.,?]*$'
+        if re.match(greeting_pattern, clean_query):
+            return "GREETING"
+
+        if len(words) <= 3 and any(w in {"hi", "hello", "hey", "greetings", "howdy", "sup", "thanks"} for w in words):
+            # Verify if there is a specific competitor name attached e.g. "hi salesforce"
+            if not any(entity.lower() in clean_query for entity in KNOWN_ENTITIES):
+                return "GREETING"
+
+        # 2. Check GENERAL_QA
+        general_qa_phrases = [
+            "counterpoint", "what can you do", "who are you", "what is this", "how to use",
+            "how does this work", "help me use", "what are your features", "how do i upload",
+            "what is your purpose", "how do you work", "what do you do"
+        ]
+        if any(phrase in clean_query for phrase in general_qa_phrases):
+            return "GENERAL_QA"
+
+        # 3. Check COMPETITOR_RESEARCH - Known Entities
+        for entity in KNOWN_ENTITIES:
+            if re.search(r'\b' + re.escape(entity) + r'\b', clean_query, re.IGNORECASE):
+                return "COMPETITOR_RESEARCH"
+
+        # 4. Check COMPETITOR_RESEARCH - Domain Keywords
+        competitor_keywords = {
+            "pricing", "price", "cost", "competitor", "competitors", "versus", "vs",
+            "features", "positioning", "market", "alternative", "alternatives", "strategy",
+            "gap", "contrast", "saas", "tier", "subscription", "crm", "erp", "software",
+            "platform", "product", "analytics", "document", "pdf", "txt", "upload",
+            "analysis", "compare", "comparison", "offering", "offerings", "benchmark",
+            "vendor", "tool", "integration", "enterprise", "smb", "onboarding"
+        }
+        if any(w in competitor_keywords for w in words):
+            return "COMPETITOR_RESEARCH"
+
+        # 5. Check OFF_TOPIC indicators
+        off_topic_indicators = [
+            "capital of", "weather", "tell me a joke", "write a poem", "solve",
+            "recipe", "who won", "movie", "song", "president", "distance to", "translate"
+        ]
+        if any(ind in clean_query for ind in off_topic_indicators):
+            return "OFF_TOPIC"
+
+        # Check proper noun / capitalization in original query (e.g. company names outside KNOWN_ENTITIES)
+        capitalized_words = re.findall(r'\b[A-Z][a-zA-Z0-9\.\-]{2,}\b', str(query))
+        ignored_caps = {"What", "How", "Why", "When", "Who", "Where", "Can", "Could", "Should", "Would", "Tell", "Give", "Show", "Is", "Are", "The", "This", "That", "Please", "France", "Germany", "Paris", "London"}
+        meaningful_caps = [c for c in capitalized_words if c not in ignored_caps]
+        if len(meaningful_caps) > 0:
+            return "COMPETITOR_RESEARCH"
+
+        if len(words) <= 4 and not any(w in competitor_keywords for w in words):
+            return "OFF_TOPIC"
+
+        return "COMPETITOR_RESEARCH"
+
+    @staticmethod
     def resolve_query(query, conversation_history=None, session_id="global"):
         start_time = time.time()
         raw_query = query.strip()
